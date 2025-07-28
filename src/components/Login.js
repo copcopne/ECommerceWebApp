@@ -2,8 +2,9 @@ import { useContext, useState } from "react";
 import { Button, Form } from "react-bootstrap";
 import MySpinner from "./layouts/MySpinner";
 import { DispatchContext, MyToastContext } from "../configs/Contexts";
-import Apis, { endpoints } from "../configs/Apis";
+import Apis, { authApis, endpoints } from "../configs/Apis";
 import { useNavigate, useSearchParams } from "react-router-dom";
+import cookie from 'react-cookies'
 
 const Login = () => {
     const info = [{
@@ -25,12 +26,12 @@ const Login = () => {
     const validate = () => {
         if (Object.values(user).length === 0) {
             myToastDispatch({
-                    "type": "set",
-                    "payload": {
-                        "variant": "danger",
-                        "message": "Tài khoản và mật khẩu không được để trống!"
-                    }
-                })
+                "type": "set",
+                "payload": {
+                    "variant": "danger",
+                    "message": "Tài khoản và mật khẩu không được để trống!"
+                }
+            })
             return false;
         }
 
@@ -54,14 +55,20 @@ const Login = () => {
         if (validate())
             try {
                 setLoading(true);
-                let res = await Apis.post(endpoints['login'], user);
+                let res = await Apis.post(endpoints['login'], {
+                     ...user 
+                    });
+                cookie.save('token', res.data.token);
+                console.info(res.data);
+
+                let u = await authApis().get(endpoints['profile']);
                 dispatch({
                     "type": "login",
-                    "payload": res.data
+                    "payload": u.data
                 });
 
                 let next = q.get('next');
-                nav(next?next:"/");
+                nav(next ? next : "/");
 
             } catch (error) {
                 let msg;
@@ -90,7 +97,7 @@ const Login = () => {
             <Form onSubmit={login}>
                 {info.map(i => <Form.Group key={i.field} className="mb-3" controlId={i.field}>
                     <Form.Label>{i.title}</Form.Label>
-                    <Form.Control value={user[i.field]} onChange={e => setUser({ ...user, [i.field]: e.target.value })} type={i.type} placeholder={i.title} />
+                    <Form.Control required value={user[i.field]} onChange={e => setUser({...user, [i.field]: e.target.value})} type={i.type} placeholder={i.title} />
                 </Form.Group>)}
 
 

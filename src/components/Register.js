@@ -49,7 +49,7 @@ const Register = () => {
                 let formData = new FormData();
                 for (let key in user)
                     if (key !== 'confirm')
-                        formData.append(key, user['key']);
+                        formData.append(key, user[key]);
 
                 if (avatar.current.files.length > 0) {
                     formData.append("avatar", avatar.current.files[0]);
@@ -96,7 +96,7 @@ const Register = () => {
             <Form onSubmit={register}>
                 {info.map(i => <Form.Group key={i.field} className="mb-3" controlId={i.field}>
                     <Form.Label>{i.title}</Form.Label>
-                    <Form.Control value={user[i.field]} onChange={e => setUser({ ...user, [i.field]: e.target.value })} type={i.type} placeholder={i.title} />
+                    <Form.Control value={user[i.field]} onChange={e => setUser({...user, [i.field]: e.target.value})} type={i.type} placeholder={i.title} />
                 </Form.Group>)}
 
                 <Form.Group className="mb-3" controlId="exampleForm.ControlInput1">
