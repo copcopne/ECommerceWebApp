@@ -1,4 +1,5 @@
-import { Badge, Button, ButtonGroup, Col, Container, Image, Row } from "react-bootstrap";
+import { Badge, Button, ButtonGroup, Card, Col, Container, Image, Row } from "react-bootstrap";
+import { Link } from "react-router-dom";
 
 const ProductDetail = () => {
   return <>
@@ -66,7 +67,24 @@ const ProductDetail = () => {
       </Row>
 
       <div className="mt-4">
-        <h3>Danh sách đánh giá và bình luận</h3>
+        <h3>Các sản phẩm tương tự</h3>
+        <Row className="mt-3">
+                <Col md={2} xs={3} className="p-1">
+                    <Link to="/details" className="text-decoration-none text-dark">
+                        <Card className="rounded">
+                            <Card.Img variant="top" className="rounded" src="https://res.cloudinary.com/dq3dtj8lz/image/upload/v1746975885/mjkzffehkm2gws3b8ybl.jpg" />
+                            <Card.Body>
+                                <Card.Title>test</Card.Title>
+                                <Card.Text>VNĐ</Card.Text>
+                            </Card.Body>
+                        </Card>
+                    </Link>
+                </Col>
+            </Row>
+      </div>
+
+      <div className="mt-4">
+        <h3>Đánh giá và bình luận</h3>
         <Row className="mt-3">
           <Col md={1} xs={3}>
           <Image
