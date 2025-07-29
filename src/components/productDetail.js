@@ -1,27 +1,58 @@
-import { Badge, Button, ButtonGroup, Card, Col, Container, Image, Row } from "react-bootstrap";
-import { Link } from "react-router-dom";
+import { useEffect, useState } from "react";
+import { Button, Card, Col, Container, Image, Row } from "react-bootstrap";
+import { Link, useSearchParams } from "react-router-dom";
+import Apis, { endpoints } from "../configs/Apis";
+import Empty from "./Emtpy";
+import MySpinner from "./layouts/MySpinner";
 
 const ProductDetail = () => {
+  const [loading, setLoading] = useState();
+  const [empty, setEmpty] = useState(false);
+  const [product, setProduct]= useState({});
+  const [q] = useSearchParams();
+  
+  const loadProduct = async () => {
+    try {
+      setLoading(true);
+      let pId = q.get("id");
+      let res = await Apis.get(endpoints['productDetail'](pId));
+      if (!res.data)
+        setEmpty(true);
+      else setProduct(res.data);
+    } catch (error) {
+      setEmpty(true);
+      console.error(error);
+    } finally {
+      setLoading(false);
+    };
+  };
+  useEffect(() => {
+    loadProduct();
+  }, []);
+
+  if (empty)
+    return <Empty />
   return <>
+    {loading && <MySpinner />}
     <Container className="my-4">
       <Row>
         <Col md={5} xs={4}>
           <Image
-            src="https://res.cloudinary.com/dq3dtj8lz/image/upload/v1746975885/mjkzffehkm2gws3b8ybl.jpg"
+            src={product.imageURL}
             fluid
             className="rounded"
           />
         </Col>
         <Col md={7} xs={8}>
-          <h1>Tên sản phẩm</h1>
+          <h1>{product.productName}</h1>
           <p>
-            <strong className="text-danger">Tiền đ</strong>{'  '}
+            <strong className="text-danger">{product.price} VNĐ</strong>{'  '}
             <strong className="text-info">69 lượt mua</strong>{'  '}
             <strong className="text-info">96 lượt đánh giá</strong>{'  '}
           </p>
           <hr />
           <h2>Mô tả sản phẩm</h2>
-          <p>bla bla bla ble ble ble</p>
+          <p>{product.description}</p>
           <hr />
           <Button variant="outline-primary" className="me-2 m-2">
             Thêm vào giỏ hàng

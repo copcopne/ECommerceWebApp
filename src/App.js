@@ -6,7 +6,7 @@ import Footer from "./components/layouts/Footer";
 import Home from "./components/Home";
 import Register from "./components/Register";
 import Login from "./components/Login";
-import { useReducer } from "react";
+import { useEffect, useReducer, useState } from "react";
 import UserReducer from "./reducers/UserReducer";
 import { DispatchContext, MyToastContext, UserContext } from "./configs/Contexts";
 import Profile from "./components/profile/Profile";
@@ -19,10 +19,38 @@ import ProductDetail from "./components/productDetail";
 import Cart from "./components/Cart";
 import MyToast from "./components/layouts/MyToast";
 import MyToastReducer from "./reducers/MyToastReducer";
+import MySpinner from "./components/layouts/MySpinner";
+import cookie from "react-cookies";
+import { authApis, endpoints } from "./configs/Apis";
 
 function App() {
+  const [loading, setLoading] = useState(false);
   const [user, dispatch] = useReducer(UserReducer, null);
   const [myToast, myToastDispatch] = useReducer(MyToastReducer, null);
+
+  const loadDatas = async () => {
+    try {
+      setLoading(true);
+      let token = cookie.load("token") || null;
+      if (token) {
+        let u = await authApis().get(endpoints['profile']);
+        dispatch({
+          "type": "login",
+          "payload": u.data
+        });
+      }
+    } catch (error) {
+      console.error(error);
+    } finally {
+      setLoading(false);
+    };
+  };
+  useEffect(() => {
+    loadDatas();
+  }, []);
+
+  if (loading)
+    return <MySpinner />
 
   return (
     <UserContext.Provider value={user}>

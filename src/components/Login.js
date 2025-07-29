@@ -4,7 +4,7 @@ import MySpinner from "./layouts/MySpinner";
 import { DispatchContext, MyToastContext } from "../configs/Contexts";
 import Apis, { authApis, endpoints } from "../configs/Apis";
 import { useNavigate, useSearchParams } from "react-router-dom";
-import cookie from 'react-cookies'
+import cookie from 'react-cookies';
 
 const Login = () => {
     const info = [{
@@ -20,7 +20,7 @@ const Login = () => {
     const dispatch = useContext(DispatchContext);
     const [loading, setLoading] = useState(false);
     const [, myToastDispatch] = useContext(MyToastContext);
-    const q = useSearchParams() || null;
+    const [q] = useSearchParams();
     const nav = useNavigate();
 
     const validate = () => {
@@ -56,8 +56,8 @@ const Login = () => {
             try {
                 setLoading(true);
                 let res = await Apis.post(endpoints['login'], {
-                     ...user 
-                    });
+                    ...user
+                });
                 cookie.save('token', res.data.token);
                 console.info(res.data);
 
@@ -69,6 +69,14 @@ const Login = () => {
 
                 let next = q.get('next');
                 nav(next ? next : "/");
+
+                myToastDispatch({
+                    "type": "set",
+                    "payload": {
+                        "variant": "success",
+                        "message": "Đăng nhập thành công!"
+                    }
+                })
 
             } catch (error) {
                 let msg;
@@ -97,7 +105,7 @@ const Login = () => {
             <Form onSubmit={login}>
                 {info.map(i => <Form.Group key={i.field} className="mb-3" controlId={i.field}>
                     <Form.Label>{i.title}</Form.Label>
-                    <Form.Control required value={user[i.field]} onChange={e => setUser({...user, [i.field]: e.target.value})} type={i.type} placeholder={i.title} />
+                    <Form.Control required value={user[i.field]} onChange={e => setUser({ ...user, [i.field]: e.target.value })} type={i.type} placeholder={i.title} />
                 </Form.Group>)}
 
 

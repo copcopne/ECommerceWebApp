@@ -3,6 +3,7 @@ import { Button, Form } from "react-bootstrap";
 import MySpinner from "./layouts/MySpinner";
 import Apis, { endpoints } from "../configs/Apis";
 import { MyToastContext } from "../configs/Contexts";
+import { useNavigate } from "react-router-dom";
 
 const Register = () => {
     const info = [{
@@ -35,6 +36,7 @@ const Register = () => {
     const [user, setUser] = useState({});
     const [loading, setLoading] = useState(false);
     const [, myToastDispatch] = useContext(MyToastContext);
+    const nav = useNavigate();
 
     const validate = () => {
         return true;
@@ -65,7 +67,8 @@ const Register = () => {
                         "variant": "success",
                         "message": "Đăng ký thành công! Bạn bây giờ đã có thể đăng nhập vào hệ thống."
                     }
-                })
+                });
+                nav("/login");
                 
             }
             catch (error) {

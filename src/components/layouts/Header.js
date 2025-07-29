@@ -15,9 +15,13 @@ const Header = () => {
   const nav = useNavigate();
   const [keyword, setKeyword] = useState();
   const logout = () => {
-    dispatch({
-      "type": "logout"
-    });
+    let result = window.confirm("Bạn có chắc muốn đăng xuất không?");
+    if (result) {
+      dispatch({
+        "type": "logout"
+      });
+      nav("/");
+    }
   }
   return (
     <>
@@ -54,14 +58,14 @@ const Header = () => {
                 <Link to="/login" className='nav-link mx-1'>Đăng nhập</Link>
                 <Link to="/register" className='nav-link mx-1'>Đăng ký</Link></> : <>
                 <NavDropdown
-                  title="username"
+                  title={user.name}
                   id="navbarScrollingDropdown"
                   className='m-2'
                 >
                   <Link to="/profile" className='dropdown-item'>Hồ sơ</Link>
                   <Link to="/my-store" className='dropdown-item'>Cửa hàng của tôi</Link>
                   <NavDropdown.Divider />
-                  <Button onclick={logout} className='dropdown-item text-danger'>Đăng xuất</Button>
+                  <Button onClick={logout} className='dropdown-item text-danger'>Đăng xuất</Button>
                 </NavDropdown>
               </>}
 
