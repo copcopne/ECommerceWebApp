@@ -77,6 +77,7 @@ const Search = () => {
                         <Form>
                             <div className="d-flex gap-2 mb-2">
                                 {priceFilter.map(f => <Form.Control
+                                    key={f.type}
                                     value={filter[f.type] || ""}
                                     onChange={e => setFilter({ ...filter, [f.type]: e.target.value })}
                                     type="number"
