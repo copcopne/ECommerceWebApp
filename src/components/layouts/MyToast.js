@@ -39,7 +39,8 @@ const MyToast = () => {
             <Toast.Header closeButton>
                 <strong className="me-auto">{myToast?.title || "Thông báo"}</strong>
             </Toast.Header>
-            <Toast.Body className={myToast?.variant?.toLowerCase() === 'dark' ? 'text-white' : ''}>
+            <Toast.Body className={`fw-bold ${myToast?.variant?.toLowerCase() !== 'light' ? 'text-white' : ''}`}>
+
                 {myToast?.message}
             </Toast.Body>
         </Toast>

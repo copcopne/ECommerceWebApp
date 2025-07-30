@@ -48,11 +48,11 @@ const Home = () => {
             <h3>Danh mục sản phẩm</h3>
             <Row className="mt-3">
                 <Col md={2} xs={4} className="border p-2 d-flex justify-content-center align-items-center">
-                    <Link to={"/"} className="navbar-brand">Tất cả sản phẩm</Link>
+                    <Link to={"/"} className="navbar-brand fw-bold">Tất cả sản phẩm</Link>
                 </Col>
                 {cates.map(c => (
                     <Col key={c.categoryId} md={2} xs={4} className="border p-2 d-flex justify-content-center align-items-center">
-                        <Link to={`/?category=${c.categoryId}`} className="navbar-brand">{c.categoryName}</Link>
+                        <Link to={`/?category=${c.categoryId}`} className="navbar-brand fw-bold">{c.categoryName}</Link>
                     </Col>
                 ))}
             </Row>

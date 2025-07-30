@@ -48,7 +48,7 @@ const Header = () => {
                     }
                   }}
                 />
-                <Button onClick={() => nav(`/search?keyword=${keyword}`)} variant="outline-success">Tìm</Button>
+                <Button onClick={() => nav(`/search?keyword=${keyword}`)} variant="outline-dark">Tìm</Button>
               </Form>
               <Link to="/my-cart" className='nav-link mx-3'>
                 <i className="bi bi-cart3 fs-5"></i>

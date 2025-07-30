@@ -10,7 +10,6 @@ import { useEffect, useReducer, useState } from "react";
 import UserReducer from "./reducers/UserReducer";
 import { DispatchContext, MyToastContext, UserContext } from "./configs/Contexts";
 import Profile from "./components/profile/Profile";
-import EditProfile from "./components/profile/EditProfile";
 import EditStore from "./components/store/EditStore";
 import Stats from "./components/store/Stats";
 import AddProduct from "./components/store/AddProduct";
@@ -23,6 +22,8 @@ import MySpinner from "./components/layouts/MySpinner";
 import cookie from "react-cookies";
 import { authApis, endpoints } from "./configs/Apis";
 import Store from "./components/store/Store";
+import EditPassword from "./components/profile/EditPassword";
+import Empty from "./components/Emtpy";
 
 function App() {
   const [loading, setLoading] = useState(false);
@@ -72,15 +73,15 @@ function App() {
                 <Route path="/my-cart" element={<Cart />} />
 
 
-                <Route path="/profile" element={<Profile />}>
-                  <Route path="edit" element={<EditProfile />} />
-                </Route>
+                <Route path="/profile" element={<Profile />} />
+                <Route path="/profile/edit-password" element={<EditPassword />} />
 
-                <Route path="/my-store" element={<Store />}>
-                  <Route path="edit" element={<EditStore />} />
-                  <Route path="add-product" element={<AddProduct />} />
-                  <Route path="stats" element={<Stats />} />
-                </Route>
+                <Route path="/my-store" element={<Store />} />
+                <Route path="/my-store/edit" element={<EditStore />} />
+                <Route path="/my-store/add-product" element={<AddProduct />} />
+                <Route path="/my-store/stats" element={<Stats />} />
+                
+                <Route path="*" element={<Empty />} />
               </Routes>
             </Container>
 
