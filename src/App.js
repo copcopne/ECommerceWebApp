@@ -22,6 +22,7 @@ import MyToastReducer from "./reducers/MyToastReducer";
 import MySpinner from "./components/layouts/MySpinner";
 import cookie from "react-cookies";
 import { authApis, endpoints } from "./configs/Apis";
+import Store from "./components/store/Store";
 
 function App() {
   const [loading, setLoading] = useState(false);
@@ -75,7 +76,7 @@ function App() {
                   <Route path="edit" element={<EditProfile />} />
                 </Route>
 
-                <Route path="/my-store" element={<Profile />}>
+                <Route path="/my-store" element={<Store />}>
                   <Route path="edit" element={<EditStore />} />
                   <Route path="add-product" element={<AddProduct />} />
                   <Route path="stats" element={<Stats />} />
