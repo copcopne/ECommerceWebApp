@@ -1,5 +1,5 @@
 import { useContext, useState } from "react";
-import { Button, Form } from "react-bootstrap";
+import { Alert, Button, Form } from "react-bootstrap";
 import MySpinner from "./layouts/MySpinner";
 import { DispatchContext, MyToastContext } from "../configs/Contexts";
 import Apis, { authApis, endpoints } from "../configs/Apis";
@@ -21,6 +21,7 @@ const Login = () => {
     const [loading, setLoading] = useState(false);
     const [, myToastDispatch] = useContext(MyToastContext);
     const [q] = useSearchParams();
+    const next = q.get("next") || null;
     const nav = useNavigate();
 
     const validate = () => {
@@ -59,7 +60,6 @@ const Login = () => {
                     ...user
                 });
                 cookie.save('token', res.data.token);
-                console.info(res.data);
 
                 let u = await authApis().get(endpoints['profile']);
                 dispatch({
@@ -67,7 +67,6 @@ const Login = () => {
                     "payload": u.data
                 });
 
-                let next = q.get('next');
                 nav(next ? next : "/");
 
                 myToastDispatch({
@@ -101,6 +100,14 @@ const Login = () => {
     return (
         <>
             {loading && <MySpinner />}
+            {next && <Alert
+                variant="danger"
+                className="text-center py-3"
+            >
+                Vui lòng đăng nhập để tiếp tục
+            </Alert>
+            }
+
             <h1 className="text-center mt-2">ĐĂNG NHẬP</h1>
             <Form onSubmit={login}>
                 {info.map(i => <Form.Group key={i.field} className="mb-3" controlId={i.field}>

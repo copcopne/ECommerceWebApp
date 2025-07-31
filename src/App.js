@@ -1,5 +1,6 @@
 import { BrowserRouter, Route, Routes } from "react-router-dom";
 import 'bootstrap/dist/css/bootstrap.css';
+import 'bootstrap-icons/font/bootstrap-icons.css';
 import { Container } from "react-bootstrap";
 import Header from "./components/layouts/Header";
 import Footer from "./components/layouts/Footer";
@@ -24,6 +25,7 @@ import { authApis, endpoints } from "./configs/Apis";
 import Store from "./components/store/Store";
 import EditPassword from "./components/profile/EditPassword";
 import Empty from "./components/Emtpy";
+import Auth from "./components/Auth";
 
 function App() {
   const [loading, setLoading] = useState(false);
@@ -72,7 +74,7 @@ function App() {
                 <Route path="/details" element={<ProductDetail />} />
                 <Route path="/my-cart" element={<Cart />} />
 
-
+                <Route path="/auth" element={<Auth />} />
                 <Route path="/profile" element={<Profile />} />
                 <Route path="/profile/edit-password" element={<EditPassword />} />
 

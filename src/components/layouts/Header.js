@@ -1,4 +1,4 @@
-import { useContext, useState } from 'react';
+import { useContext, useRef, useState } from 'react';
 import Button from 'react-bootstrap/Button';
 import Container from 'react-bootstrap/Container';
 import Form from 'react-bootstrap/Form';
@@ -7,12 +7,14 @@ import Navbar from 'react-bootstrap/Navbar';
 import NavDropdown from 'react-bootstrap/NavDropdown';
 import { Link, useNavigate } from 'react-router-dom';
 import { DispatchContext, UserContext } from '../../configs/Contexts';
-import 'bootstrap-icons/font/bootstrap-icons.css';
+import { Overlay, Tooltip } from 'react-bootstrap';
 
 const Header = () => {
   const user = useContext(UserContext);
   const dispatch = useContext(DispatchContext);
   const nav = useNavigate();
+  const searchTarget = useRef(null);
+  const [showSearchTooltip, setShowSearchTooltip] = useState(false);
   const [keyword, setKeyword] = useState();
   const logout = () => {
     let result = window.confirm("Bạn có chắc muốn đăng xuất không?");
@@ -40,15 +42,26 @@ const Header = () => {
                   className="me-2"
                   aria-label="Search"
                   value={keyword}
+                  ref={searchTarget}
                   onChange={event => setKeyword(event.target.value)}
                   onKeyDown={(e) => {
                     if (e.key === "Enter") {
                       e.preventDefault();
-                      nav(`/search?keyword=${keyword}`);
+                      if (keyword !== undefined && keyword.trim() !== "")
+                        nav(`/search?keyword=${keyword}`);
+                      else{
+                        setShowSearchTooltip(true);
+                        setTimeout(() => setShowSearchTooltip(false), 3000);
+                        }
                     }
                   }}
                 />
-                <Button onClick={() => nav(`/search?keyword=${keyword}`)} variant="outline-dark">Tìm</Button>
+                <Overlay target={searchTarget.current} show={showSearchTooltip} placement="bottom">
+                  <Tooltip className='fw-bold'>
+                    Vui lòng nhập từ khoá để tìm kiếm!
+                  </Tooltip>
+                </Overlay>
+                <Button onClick={() => nav((keyword !== undefined && keyword.trim() !== "") ? `/search?keyword=${keyword}` : '/search')} variant="outline-dark">Tìm</Button>
               </Form>
               <Link to="/my-cart" className='nav-link mx-3'>
                 <i className="bi bi-cart3 fs-5"></i>

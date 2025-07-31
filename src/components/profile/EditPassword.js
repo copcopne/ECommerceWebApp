@@ -2,6 +2,7 @@ import { useContext, useState } from "react";
 import { Button, Col, Form, Row } from "react-bootstrap";
 import { MyToastContext } from "../../configs/Contexts";
 import MySpinner from "../layouts/MySpinner";
+import { Link, useNavigate } from "react-router-dom";
 
 const EditPassword = () => {
     const info = [{
@@ -14,6 +15,7 @@ const EditPassword = () => {
         "title": "Xác nhận mật khẩu",
         "field": "confirm"
     }];
+    const nav = useNavigate();
     const [loading, setLoading] = useState(false);
     const [data, setData] = useState({});
     const [, myToastDispatch] = useContext(MyToastContext);
@@ -51,10 +53,23 @@ const EditPassword = () => {
                 setLoading(false);
             }
     };
+    const backHandler = () => {
+        if (Object.keys(data).length > 0) {
+            let result = window.confirm("Bạn có chắc muốn quay lại không?");
+            if (result)
+                nav("/profile");
+        }
+        else nav("/profile");
+    }
     return <>
 
         {loading && <MySpinner />}
-        <h1>Cập nhật mật khẩu</h1>
+        
+        <span className="display-6 fw-bold">
+            <a onClick={backHandler} className="text-dark" style={{ cursor: "pointer" }}>
+                Hồ sơ của bạn
+            </a> &gt; Cập nhật mật khẩu
+        </span>
         <Form className="m-3">
             {info.map(i => (
                 <Form.Group key={i.field} className="p-3" controlId={i.field}>
