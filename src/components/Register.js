@@ -19,6 +19,10 @@ const Register = () => {
         "field": "email",
         "type": "email"
     }, {
+        "title": "Địa chỉ",
+        "field": "address",
+        "type": "text"
+    }, {
         "title": "Tên đăng nhập",
         "field": "username",
         "type": "text"

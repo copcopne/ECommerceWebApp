@@ -21,6 +21,10 @@ const Profile = () => {
         "title": "Email",
         "field": "email",
         "type": "email"
+    }, {
+        "title": "Địa chỉ",
+        "field": "address",
+        "type": "text"
     }];
     const nav = useNavigate();
     const [loading, setLoading] = useState(false);
