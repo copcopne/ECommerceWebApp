@@ -6,12 +6,13 @@ import Nav from 'react-bootstrap/Nav';
 import Navbar from 'react-bootstrap/Navbar';
 import NavDropdown from 'react-bootstrap/NavDropdown';
 import { Link, useNavigate } from 'react-router-dom';
-import { DispatchContext, UserContext } from '../../configs/Contexts';
+import { DispatchContext, MyToastContext, UserContext } from '../../configs/Contexts';
 import { Overlay, Tooltip } from 'react-bootstrap';
 
 const Header = () => {
   const user = useContext(UserContext);
   const dispatch = useContext(DispatchContext);
+  const [, toast] = useContext(MyToastContext);
   const nav = useNavigate();
   const searchTarget = useRef(null);
   const [showSearchTooltip, setShowSearchTooltip] = useState(false);
@@ -23,6 +24,13 @@ const Header = () => {
         "type": "logout"
       });
       nav("/");
+      toast({
+        "type": "set",
+        "payload": {
+          "variant": "light",
+          "message": "Đăng xuất thành công!"
+        }
+      });
     }
   }
   return (
@@ -49,10 +57,10 @@ const Header = () => {
                       e.preventDefault();
                       if (keyword !== undefined && keyword.trim() !== "")
                         nav(`/search?keyword=${keyword}`);
-                      else{
+                      else {
                         setShowSearchTooltip(true);
                         setTimeout(() => setShowSearchTooltip(false), 3000);
-                        }
+                      }
                     }
                   }}
                 />
@@ -76,7 +84,7 @@ const Header = () => {
                   className='m-2'
                 >
                   <Link to="/profile" className='dropdown-item'>Hồ sơ</Link>
-                  <Link to="/my-store" className='dropdown-item'>Cửa hàng của tôi</Link>
+                  {user.role === "ROLE_SELLER" && <Link to="/my-store" className='dropdown-item'>Cửa hàng của tôi</Link>}
                   <NavDropdown.Divider />
                   <Button onClick={logout} className='dropdown-item text-danger'>Đăng xuất</Button>
                 </NavDropdown>

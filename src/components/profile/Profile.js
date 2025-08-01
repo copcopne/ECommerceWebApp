@@ -78,7 +78,7 @@ const Profile = () => {
                                         type="file"
                                         ref={avatar}
                                         style={{ display: 'none' }}
-                                        accept="image/*"
+                                        accept="image/png, image/jpeg"
                                         onChange={(e) => {
                                             const file = e.target.files[0];
                                             if (file) {

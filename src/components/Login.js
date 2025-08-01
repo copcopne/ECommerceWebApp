@@ -98,7 +98,7 @@ const Login = () => {
     }
 
     return (
-        <>
+        <div className="container">
             {loading && <MySpinner />}
             {next && <Alert
                 variant="danger"
@@ -120,7 +120,7 @@ const Login = () => {
                     <Button type="submit" variant="success">Đăng nhập</Button>
                 </Form.Group>
             </Form>
-        </>
+        </div>
     );
 }
 

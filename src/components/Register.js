@@ -92,7 +92,7 @@ const Register = () => {
 
 
     return (
-        <>
+        <div className="container">
             {loading && <MySpinner />}
             <h1 className="text-center mt-2">ĐĂNG KÝ TÀI KHOẢN</h1>
 
@@ -104,14 +104,14 @@ const Register = () => {
 
                 <Form.Group className="mb-3" controlId="exampleForm.ControlInput1">
                     <Form.Label>Ảnh đại diện</Form.Label>
-                    <Form.Control type="file" ref={avatar} />
+                    <Form.Control type="file" ref={avatar} accept="image/png, image/jpeg" />
                 </Form.Group>
 
                 <Form.Group className="mb-3" controlId="exampleForm.ControlInput2">
                     <Button type="submit" variant="success">Đăng ký</Button>
                 </Form.Group>
             </Form>
-        </>
+        </div>
     );
 }
 
