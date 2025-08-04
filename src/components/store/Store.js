@@ -169,7 +169,7 @@ const Store = () => {
                                     <Col md={11} xs={9}>
                                         <p className="mx-0 my-0 fw-semibold">{review?.username}</p>
                                         <div className="d-flex align-items-center mb-1">
-                                            {[...Array(review?.rating)].map((_, i) =>
+                                            {[...Array(5)].map((_, i) =>
                                                 i < review?.rating ? (
                                                     <FaStar key={i} className="text-warning me-1" />
                                                 ) : (
