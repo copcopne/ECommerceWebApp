@@ -78,10 +78,10 @@ function App() {
                 <Route path="/profile" element={<Profile />} />
                 <Route path="/profile/edit-password" element={<EditPassword />} />
 
-                <Route path="/my-store" element={<Store />} />
-                <Route path="/my-store/edit" element={<EditStore />} />
-                <Route path="/my-store/add-product" element={<AddProduct />} />
-                <Route path="/my-store/stats" element={<Stats />} />
+                <Route path="/store" element={<Store />} />
+                <Route path="/store/edit" element={<EditStore />} />
+                <Route path="/store/add-product" element={<AddProduct />} />
+                <Route path="/store/stats" element={<Stats />} />
                 
                 <Route path="*" element={<Empty />} />
               </Routes>

@@ -65,7 +65,7 @@ const EditPassword = () => {
 
         {loading && <MySpinner />}
         
-        <span className="display-6 fw-bold">
+        <span className="fs-4 fw-medium">
             <a onClick={backHandler} className="text-dark" style={{ cursor: "pointer" }}>
                 Hồ sơ của bạn
             </a> &gt; Cập nhật mật khẩu

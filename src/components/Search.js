@@ -25,18 +25,30 @@ const Search = () => {
                 setProducts([]);
                 return;
             }
-
+            if (page === 0) return;
             setLoading(true);
             try {
-                let url = `${endpoints.product}?page=${page}`;
+                let url = `${endpoints['products']}?page=${page}`;
                 url += searchByStore
                     ? `&storeName=${keyword}`
                     : `&kw=${keyword}`;
                 for (let key in filter)
                     url += `&${key}=${filter[key]}`;
-
+                console.info(url);
                 const res = await Apis.get(url);
-                setProducts(res.data);
+                if (res.data.length === 0)
+                    setPage(0);
+                else {
+                    if (page === 1)
+                        setProducts(res.data);
+                    else {
+                        let data = res.data.filter(
+                            item =>
+                                !products.some(p => p.productId === item.productId)
+                        );
+                        setProducts([...products, ...data]);
+                    }
+                }
             } catch (err) {
                 console.error(err);
             } finally {
@@ -46,11 +58,20 @@ const Search = () => {
         searchProducts();
     }, [searchByStore, q, filter, page]);
 
+    useEffect(() => {
+        setPage(1);
+    }, [q]);
+
+    const loadMore = () => {
+        if (!loading && page !== 0)
+            setPage(page + 1);
+    };
+
     const resetForm = () => {
         if (Object.keys(filter).length !== 0) {
-        setTempFilter({});
-        setFilter({});
-        setPage(1);
+            setTempFilter({});
+            setFilter({});
+            setPage(1);
         }
     };
 
@@ -149,6 +170,14 @@ const Search = () => {
                                     <i className="bi bi-box-seam fs-1 mb-3 d-block"></i>
                                     <h4 className="fw-semibold">Không có sản phẩm nào</h4>
                                 </div>
+                            </Col>
+                        )}
+
+                        {page !== 0 && products.length > 0 && (
+                            <Col xs={12} className="text-center my-3">
+                                <Button variant="outline-primary" onClick={loadMore}>
+                                    Xem thêm sản phẩm
+                                </Button>
                             </Col>
                         )}
                     </Row>

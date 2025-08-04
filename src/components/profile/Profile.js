@@ -63,7 +63,7 @@ const Profile = () => {
             <MySpinner />
         ) : (
             <>
-                <span className="display-6 fw-bold">Hồ sơ của bạn</span>
+                <span className="fs-4 fw-medium">Hồ sơ của bạn</span>
                 <Row className=" py-3 mx-3 my-2 me-auto">
                     <Col md={3} xs={12}>
                         <div className="d-flex align-items-center">
