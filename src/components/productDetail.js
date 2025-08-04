@@ -1,10 +1,13 @@
 import { useContext, useEffect, useState } from "react";
 import { Button, Card, Col, Container, Form, Image, Row } from "react-bootstrap";
 import { Link, useSearchParams } from "react-router-dom";
-import Apis, { endpoints } from "../configs/Apis";
+import Apis, { authApis, endpoints } from "../configs/Apis";
 import Empty from "./Emtpy";
 import MySpinner from "./layouts/MySpinner";
-import { UserContext } from "../configs/Contexts";
+import { MyToastContext, UserContext } from "../configs/Contexts";
+import moment from "moment";
+import 'moment/locale/vi';
+import { FaRegStar, FaStar } from "react-icons/fa";
 
 const ProductDetail = () => {
   const user = useContext(UserContext);
@@ -15,16 +18,17 @@ const ProductDetail = () => {
   const [page, setPage] = useState(1);
   const [store, setStore] = useState({});
   const [q] = useSearchParams();
-  let pId = q.get("id");
   const [rating, setRating] = useState(0);
   const [review, setReview] = useState('');
   const [reviews, setReviews] = useState([]);
   const [pageReview, setPageReview] = useState(1);
+  const [, myToastDispatch] = useContext(MyToastContext);
+  let pId = q.get("id");
 
   const fetchProduct = async () => {
     try {
       setLoading(true);
-      let res = await Apis.get(endpoints['productDetails'](pId));
+      let res = await Apis.get(endpoints['product'](pId));
       if (!res.data)
         setEmpty(true);
       else {
@@ -65,23 +69,60 @@ const ProductDetail = () => {
       setPage(page + 1);
   };
   const fetchReviews = async () => {
-    if(pageReview !== 0)
+    if (pageReview !== 0)
       try {
         let url = `${endpoints['productReviews'](pId)}?page=${pageReview}`;
         let res = await Apis.get(url);
-        console.info(res.data);
+        setReviews(res.data);
       } catch (error) {
         console.error(error);
       } finally {
 
       }
   };
+  const validate = () => {
+    if (rating === 0 || review.trim() === "") {
+      myToastDispatch({
+        "type": "set",
+        "payload": {
+          "variant": "danger",
+          "message": "Đánh số sao và nội dung đánh giá là bắt buộc!"
+        }
+      });
+      return false;
+    }
+    return true;
+  };
+  const handleReview = async (event) => {
+    event.preventDefault();
+    if (!validate())
+      return;
+    try {
+      setLoading(true);
+      let res = await authApis().post(endpoints['reviewProduct'](pId), {
+        'comment': review,
+        'rating': rating
+      });
+      console.info(res.data);
+    } catch (error) {
+      myToastDispatch({
+        "type": "set",
+        "payload": {
+          "variant": "danger",
+          "message": "LỖI xảy ra khi thực hiện đánh giá!"
+        }
+      });
+      console.error(error);
+    } finally {
+      setLoading(false);
+    }
+  };
   useEffect(() => {
     fetchProduct();
 
     setPage(1);
     setRelatedProducts([]);
-    
+
     setPageReview(1);
     setReviews([]);
     fetchReviews();
@@ -216,7 +257,7 @@ const ProductDetail = () => {
 
       <div className="mt-4">
         <span className="fs-4 fw-medium">Viết đánh giá</span>
-        <Row className="mt-3">
+        {user ? <Row className="mt-3">
           <Col md={1} xs={3}>
             <Image
               src={user?.avatarURL}
@@ -243,7 +284,9 @@ const ProductDetail = () => {
                     Xóa đánh giá
                   </Button>}
               </div>
-              <Form >
+              <Form
+                onSubmit={handleReview}
+              >
                 <Form.Control
                   as="textarea"
                   rows={3}
@@ -252,34 +295,50 @@ const ProductDetail = () => {
                   onChange={(e) => setReview(e.target.value)}
                 />
                 <div className="text-end mt-2">
-                  <Button variant="primary">
+                  <Button type="submit" variant="primary">
                     Gửi đánh giá
                   </Button>
                 </div>
               </Form>
             </div>
           </Col>
-        </Row>
+        </Row> :
+          <p className="my-4 mx-3">
+            Vui lòng
+            <Link to={`/login?next=/details?id=${pId}`} className="text-primary fw-bold text-decoration-underline mx-1">ĐĂNG NHẬP</Link>
+            để đánh giá!
+          </p>}
       </div>
-
 
       <div className="mt-4">
         <span className="fs-4 fw-medium">Đánh giá và bình luận</span>
-        <Row className="mt-3">
-          <Col md={1} xs={3}>
-            <Image
-              src=""
-              fluid
-              className="rounded-circle"
-            />
-          </Col>
-          <Col md={11} xs={9} className="mt-2">
-            <h5>Tên người dùng</h5>
-            <p>số sao nếu có</p>
-            <small>Thời gian mua</small>
-            <p>bla bla bla ble ble ble</p>
-          </Col>
-        </Row>
+        {reviews.map(review =>
+          <Row key={review?.reviewId} className="mt-3">
+            <Col md={1} xs={3}>
+              <Image
+                src={review?.avatarURL}
+                fluid
+                className="rounded-circle"
+              />
+            </Col>
+            <Col md={11} xs={9} className="mt-2">
+              <div className="d-flex align-items-center mb-1">
+                {[...Array(review?.rating)].map((_, i) =>
+                  i < review?.rating ? (
+                    <FaStar key={i} className="text-warning me-1" />
+                  ) : (
+                    <FaRegStar key={i} className="text-warning me-1" />
+                  )
+                )}
+              </div>
+              <small>{moment(review?.createdAt).fromNow()}</small>
+              <p className="mx-0 my-0">{review.comment}</p>
+              <Button variant="link" className="text-decoration-none">Phản hồi</Button>
+              {review?.replyCount !== 0 &&
+                <Button variant="link" className="text-decoration-none">Xem phản hồi</Button>}
+            </Col>
+          </Row>
+        )}
       </div>
     </Container>
   </>;
