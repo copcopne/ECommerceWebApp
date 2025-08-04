@@ -83,6 +83,11 @@ const Search = () => {
         setProducts([]);
         setPage(1);
     };
+    const toggleSearchBy = (isStore) => {
+        setSearchByStore(isStore);
+        setPage(1);
+        setProducts([]);
+    };
 
     return (
         <>
@@ -94,13 +99,13 @@ const Search = () => {
 
                         <div className="d-grid gap-2 mb-4">
                             <Button
-                                onClick={() => setSearchByStore(false)}
+                                onClick={() => toggleSearchBy(false)}
                                 variant={searchByStore ? "outline-secondary" : "primary"}
                             >
                                 Theo tên sản phẩm
                             </Button>
                             <Button
-                                onClick={() => setSearchByStore(true)}
+                                onClick={() => toggleSearchBy(true)}
                                 variant={searchByStore ? "primary" : "outline-secondary"}
                             >
                                 Theo tên cửa hàng
@@ -144,7 +149,7 @@ const Search = () => {
                         <Col md={12} xs={12}>
                             {q.get("keyword") ? (
                                 <h2>
-                                    Kết quả tìm kiếm cho {searchByStore && "cửa hàng"} "{q.get("keyword")}"
+                                    Kết quả tìm kiếm cho sản phẩm {searchByStore && "của cửa hàng"} "{q.get("keyword")}"
                                 </h2>
                             ) : (
                                 <h2>Nhập từ khóa để tìm kiếm</h2>

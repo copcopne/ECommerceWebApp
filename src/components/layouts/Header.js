@@ -84,7 +84,7 @@ const Header = () => {
                   className='m-2'
                 >
                   <Link to="/profile" className='dropdown-item'>Hồ sơ</Link>
-                  {user.role === "ROLE_SELLER" && <Link to="/my-store" className='dropdown-item'>Cửa hàng của tôi</Link>}
+                  {user.role === "ROLE_SELLER" && <Link to="/store" className='dropdown-item'>Cửa hàng của tôi</Link>}
                   <NavDropdown.Divider />
                   <Button onClick={logout} className='dropdown-item text-danger'>Đăng xuất</Button>
                 </NavDropdown>

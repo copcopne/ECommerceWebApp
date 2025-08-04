@@ -80,6 +80,7 @@ const Store = () => {
     }, [activeKey, page]);
 
     const handleChangeTab = (key) => {
+        if (key === activeKey) return;
         setPage(1);
         setTabData([]);
         setActiveKey(key);
