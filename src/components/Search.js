@@ -59,6 +59,7 @@ const Search = () => {
     }, [searchByStore, q, filter, page]);
 
     useEffect(() => {
+        setProducts([]);
         setPage(1);
     }, [q]);
 
@@ -71,6 +72,7 @@ const Search = () => {
         if (Object.keys(filter).length !== 0) {
             setTempFilter({});
             setFilter({});
+            setProducts([]);
             setPage(1);
         }
     };
@@ -78,6 +80,7 @@ const Search = () => {
     const applyPriceFilter = (event) => {
         event.preventDefault();
         setFilter(tempFilter);
+        setProducts([]);
         setPage(1);
     };
 
