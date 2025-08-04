@@ -71,13 +71,14 @@ const ProductDetail = () => {
   const fetchReviews = async () => {
     if (pageReview !== 0)
       try {
+        setLoading(true);
         let url = `${endpoints['productReviews'](pId)}?page=${pageReview}`;
         let res = await Apis.get(url);
         setReviews(res.data);
       } catch (error) {
         console.error(error);
       } finally {
-
+        setLoading(false);
       }
   };
   const validate = () => {
@@ -99,20 +100,26 @@ const ProductDetail = () => {
       return;
     try {
       setLoading(true);
-      let res = await authApis().post(endpoints['reviewProduct'](pId), {
-        'comment': review,
-        'rating': rating
-      });
-      console.info(res.data);
+      let form = new FormData();
+      form.append('comment', review);
+      form.append('rating', rating);
+      let res = await authApis().post(endpoints['reviewProduct'](pId), form);
+      setReviews([res.data, ...reviews]);
+      setReview("");
+      setRating(0);
     } catch (error) {
-      myToastDispatch({
-        "type": "set",
-        "payload": {
-          "variant": "danger",
-          "message": "LỖI xảy ra khi thực hiện đánh giá!"
-        }
-      });
-      console.error(error);
+      let msg;
+      if (error.response.status === 403)
+        msg = "Bạn ĐÃ đánh giá sản phẩm này rồi!";
+      else msg = "LỖI khi đánh giá sản phẩm!";
+        myToastDispatch({
+          "type": "set",
+          "payload": {
+            "variant": "danger",
+            "message": msg
+          }
+        });
+        console.error(error);
     } finally {
       setLoading(false);
     }
@@ -322,6 +329,7 @@ const ProductDetail = () => {
               />
             </Col>
             <Col md={11} xs={9} className="mt-2">
+              <p className="mx-0 my-0 fw-semibold">{review?.username}</p>
               <div className="d-flex align-items-center mb-1">
                 {[...Array(review?.rating)].map((_, i) =>
                   i < review?.rating ? (
@@ -332,13 +340,16 @@ const ProductDetail = () => {
                 )}
               </div>
               <small>{moment(review?.createdAt).fromNow()}</small>
-              <p className="mx-0 my-0">{review.comment}</p>
+              <p className="mx-0 my-0">{review?.comment}</p>
               <Button variant="link" className="text-decoration-none">Phản hồi</Button>
               {review?.replyCount !== 0 &&
                 <Button variant="link" className="text-decoration-none">Xem phản hồi</Button>}
             </Col>
           </Row>
         )}
+        {reviews.length === 0 &&
+          <p className="fs-6 my-2 mx-3">Chưa có đánh giá nào</p>
+        }
       </div>
     </Container>
   </>;

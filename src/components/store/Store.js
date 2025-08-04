@@ -1,6 +1,6 @@
 import { useContext, useEffect, useState } from "react";
-import { Container, Row, Col, Tab, Nav, Tabs, Card, Button } from "react-bootstrap";
-import { FaStore, FaStar, FaUserFriends } from "react-icons/fa";
+import { Container, Row, Col, Tab, Nav, Tabs, Card, Button, Image } from "react-bootstrap";
+import { FaStore, FaStar, FaUserFriends, FaRegStar } from "react-icons/fa";
 import { Link, useSearchParams } from "react-router-dom";
 import { UserContext } from "../../configs/Contexts";
 import Empty from "../Emtpy";
@@ -52,6 +52,7 @@ const Store = () => {
                 url = `${endpoints['storeReviews'](storeId)}?page=${page}`;
             console.info(url);
             let res = await Apis.get(url);
+            console.info(res.data);
             if (res.data.length === 0) {
                 setPage(0);
                 return;
@@ -130,7 +131,7 @@ const Store = () => {
                         <Tab eventKey="products" title="Sản phẩm">
                             <Row className="p-3">
                                 {(tabData.length !== 0 && activeKey === "products") && tabData.map(p =>
-                                    <Col key={p.productId} md={2} xs={3} className="p-1">
+                                    <Col key={`p${p.productId}`} md={2} xs={3} className="p-1">
                                         <Link to={`/details?id=${p.productId}`} className="text-decoration-none text-dark">
                                             <Card className="rounded h-100 d-flex flex-column justify-content-between">
                                                 <Card.Img variant="top" className="rounded" src={p.imageURL} />
@@ -141,18 +142,48 @@ const Store = () => {
                                             </Card>
                                         </Link>
                                     </Col>)}
-                                    {page !== 0 && tabData.length > 0 && (
-                                        <Col xs={12} className="text-center my-3">
-                                            <Button variant="outline-primary" onClick={loadMore}>
-                                                Xem thêm sản phẩm
-                                            </Button>
-                                        </Col>
-                                    )}
+                                {page !== 0 && tabData.length > 0 && (
+                                    <Col xs={12} className="text-center my-3">
+                                        <Button variant="outline-primary" onClick={loadMore}>
+                                            Xem thêm sản phẩm
+                                        </Button>
+                                    </Col>
+                                )}
                             </Row>
+                            {tabData.length === 0 &&
+                                <p className="fs-6 my-2 mx-3">Chưa có sản phẩm nào</p>
+                            }
                         </Tab>
 
                         <Tab eventKey="reviews" title="Đánh giá">
-                            Tab content for Profile
+                            {(tabData.length !== 0 && activeKey === "reviews") &&  tabData.map(review =>
+                                <Row key={review?.reviewId} className="mt-3">
+                                    <Col md={1} xs={3}>
+                                        <Image
+                                            src={review?.avatarURL}
+                                            fluid
+                                            className="rounded-circle"
+                                        />
+                                    </Col>
+                                    <Col md={11} xs={9}>
+                                        <p className="mx-0 my-0 fw-semibold">{review?.username}</p>
+                                        <div className="d-flex align-items-center mb-1">
+                                            {[...Array(review?.rating)].map((_, i) =>
+                                                i < review?.rating ? (
+                                                    <FaStar key={i} className="text-warning me-1" />
+                                                ) : (
+                                                    <FaRegStar key={i} className="text-warning me-1" />
+                                                )
+                                            )}
+                                        </div>
+                                        <small>{moment(review?.createdAt).fromNow()}</small>
+                                        <p className="mx-0 my-0">{review?.comment}</p>
+                                    </Col>
+                                </Row>
+                            )}
+                            {tabData.length === 0 &&
+                                <p className="fs-6 my-2 mx-3">Chưa có đánh giá nào</p>
+                            }
                         </Tab>
                     </Tabs>
                 </Container>

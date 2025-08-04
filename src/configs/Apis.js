@@ -13,7 +13,7 @@ export const endpoints = {
     'secureProducts': `/secure/products`,
     'secureProduct': (id) => `/secure/products/${id}`,
     'product': (id) => `/products/${id}`,
-    'productReviews': (id) => `/reviews/products/${id}`,
+    'productReviews': (id) => `/products/${id}/reviews`,
     'productReviewReplies': (id) => `/reviews/${id}/replies`,
     'reviewProduct': (id) => `/secure/products/${id}/reviews`,
 
