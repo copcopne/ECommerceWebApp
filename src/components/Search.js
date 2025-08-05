@@ -34,7 +34,6 @@ const Search = () => {
                     : `&kw=${keyword}`;
                 for (let key in filter)
                     url += `&${key}=${filter[key]}`;
-                console.info(url);
                 const res = await Apis.get(url);
                 if (res.data.length === 0)
                     setPage(0);

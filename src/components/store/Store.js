@@ -271,7 +271,7 @@ const Store = () => {
                                 </Row> :
                                     <p className="my-4 mx-3">
                                         Vui lòng
-                                        <Link to={`/login?next=`} className="text-primary fw-bold text-decoration-underline mx-1">ĐĂNG NHẬP</Link>
+                                        <Link to={`/login?next=/stores?id=${storeId}`} className="text-primary fw-bold text-decoration-underline mx-1">ĐĂNG NHẬP</Link>
                                         để đánh giá!
                                     </p>}
                             </div>
