@@ -98,7 +98,7 @@ const Login = () => {
     }
 
     return (
-        <div className="container">
+        <div className="container py-3" style={{ maxWidth: 800 }}>
             {loading && <MySpinner />}
             {next && <Alert
                 variant="danger"
@@ -108,7 +108,7 @@ const Login = () => {
             </Alert>
             }
 
-            <h1 className="text-center mt-2">ĐĂNG NHẬP</h1>
+            <h2 className="text-center mt-2">ĐĂNG NHẬP</h2>
             <Form onSubmit={login}>
                 {info.map(i => <Form.Group key={i.field} className="mb-3" controlId={i.field}>
                     <Form.Label>{i.title}</Form.Label>

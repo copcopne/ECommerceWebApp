@@ -107,6 +107,13 @@ const ProductDetail = () => {
       setReviews([res.data, ...reviews]);
       setReview("");
       setRating(0);
+      myToastDispatch({
+          "type": "set",
+          "payload": {
+            "variant": "success",
+            "message": "Đánh giá thành công!"
+          }
+        });
     } catch (error) {
       let msg;
       if (error.response.status === 403)
@@ -154,30 +161,47 @@ const ProductDetail = () => {
         </Link>
       </span>
       <Row className="py-3">
-        <Col md={5} xs={4}>
-          <Image
-            src={product.imageURL}
-            fluid
-            className="rounded"
-          />
-        </Col>
-        <Col md={7} xs={8}>
-          <h1>{product.productName}</h1>
-          <p>
-            <strong className="text-danger">{product.price} VNĐ</strong>{'  '}
-            <strong className="text-info">69 lượt mua</strong>{'  '}
-            <strong className="text-info">96 lượt đánh giá</strong>{'  '}
-          </p>
-          <hr />
-          <h2>Mô tả sản phẩm</h2>
-          <p>{product.description}</p>
-          <hr />
-          <Button variant="outline-primary" className="me-2 m-2">
+      <Col md={5} xs={4}>
+        <Image
+          src={product.imageURL}
+          fluid
+          className="rounded"
+        />
+      </Col>
+
+      <Col md={7} xs={8}>
+        <h1 className="mb-3">{product.productName}</h1>
+
+        {/* Tiền và điểm đánh giá kiểu tối giản */}
+        <div className="d-flex align-items-center mb-4 gap-4">
+          <div className="fs-5">
+            <span className="text-secondary">Giá:</span>{' '}
+            <strong className="text-dark">{product?.price?.toLocaleString()} VNĐ</strong>
+          </div>
+          <div className="d-flex align-items-center fs-5">
+            <span className="text-secondary me-2">Đánh giá trung bình:</span>
+            <FaStar />{' '}
+            <strong className="text-dark">{product?.avgRating} ({product?.reviewCount} lượt đánh giá)</strong>
+          </div>
+        </div>
+
+        <hr />
+
+        <h2>Mô tả sản phẩm</h2>
+        <p>{product.description}</p>
+
+        <hr />
+
+        <div className="d-flex gap-2">
+          <Button variant="outline-primary" className="flex-fill">
             Thêm vào giỏ hàng
           </Button>
-          <Button variant="success" className="me-2 m-2">Mua ngay</Button>
-        </Col>
-      </Row>
+          <Button variant="success" className="flex-fill">
+            Mua ngay
+          </Button>
+        </div>
+      </Col>
+    </Row>
 
       <Row className="mt-4">
         <Col md={1} xs={3} className="mt-2">
