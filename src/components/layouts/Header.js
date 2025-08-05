@@ -78,7 +78,7 @@ const Header = () => {
               {!user ? <>
                 <Link to="/login" className='nav-link mx-1'>Đăng nhập</Link>
                 <Link to="/register" className='nav-link mx-1'>Đăng ký</Link></> : <>
-                {user.role === "ROLE_SELLER" && <Link to="/store" className='nav-link mx-1'>Cửa hàng của tôi</Link>}
+                {user.role === "ROLE_SELLER" && <Link to="/stores"   className='nav-link mx-1'>Cửa hàng của tôi</Link>}
                 <NavDropdown
                   title={user.name}
                   id="navbarScrollingDropdown"

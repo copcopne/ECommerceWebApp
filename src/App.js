@@ -44,9 +44,9 @@ function App() {
           "type": "login",
           "payload": u.data
         });
-
-        if (u.role === "ROLE_SELLER") {
+        if (u.data.role === "ROLE_SELLER") {
           let store = await authApis().get(endpoints['secureStore']);
+          console.info(store.data);
           storeDispatch({
             "type": "login",
             "payload": store.data

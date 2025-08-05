@@ -5,25 +5,19 @@ import { UserContext } from "../configs/Contexts";
 
 const Auth = () => {
     const user = useContext(UserContext);
-    const [q, ] = useSearchParams();
-    const [loading, setLoading] = useState(false);
+    const [q,] = useSearchParams();
     const nav = useNavigate();
 
     useEffect(() => {
         let next = user ? q.get("next") : `/login?next=${q.get("next")}`;
-        let timer = setTimeout (() => {
-            setLoading(true);
-        }, 3000);
-
-        return () => {
-            clearTimeout(timer);
-            setLoading(false);
+        let timer = setTimeout(() => {
             nav(next);
-        };
+        }, 1000);
+        return () => clearTimeout(timer);
     }, [user]);
     return <>
         <div style={{ height: "80vh" }}>
-            {loading && <MySpinner />}
+            <MySpinner />
         </div>
     </>;
 };

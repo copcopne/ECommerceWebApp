@@ -164,7 +164,8 @@ const ProductDetail = () => {
   }, [pageReview]);
 
   useEffect(() => {
-    fetchRelatedProducts();
+    if (Object.keys(product).length !== 0)
+      fetchRelatedProducts();
   }, [product, page]);
 
   if (empty)
