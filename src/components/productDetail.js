@@ -5,7 +5,7 @@ import Apis, { authApis, endpoints } from "../configs/Apis";
 import Empty from "./Emtpy";
 import MySpinner from "./layouts/MySpinner";
 import { MyToastContext, UserContext } from "../configs/Contexts";
-import {  FaStar } from "react-icons/fa";
+import { FaStar } from "react-icons/fa";
 import Review from "./layouts/Review";
 
 const ProductDetail = () => {
@@ -73,12 +73,29 @@ const ProductDetail = () => {
         setLoading(true);
         let url = `${endpoints['productReviews'](pId)}?page=${pageReview}`;
         let res = await Apis.get(url);
-        setReviews(res.data);
+        if (res.data.length === 0) {
+          setPageReview(0);
+          return;
+        }
+        if (pageReview === 1)
+          setReviews(res.data)
+        else {
+          let data = res.data.filter(
+            item =>
+              !reviews.some(r => r.reviewId === item.reviewId)
+          );
+          setReviews([...reviews, ...data]);
+        }
       } catch (error) {
         console.error(error);
       } finally {
         setLoading(false);
       }
+  };
+
+  const loadMoreReview = () => {
+    if (!loading && pageReview !== 0)
+      setPageReview(pageReview + 1);
   };
   const validate = () => {
     if (rating === 0 || review.trim() === "") {
@@ -107,25 +124,25 @@ const ProductDetail = () => {
       setReview("");
       setRating(0);
       myToastDispatch({
-          "type": "set",
-          "payload": {
-            "variant": "success",
-            "message": "Đánh giá thành công!"
-          }
-        });
+        "type": "set",
+        "payload": {
+          "variant": "success",
+          "message": "Đánh giá thành công!"
+        }
+      });
     } catch (error) {
       let msg;
       if (error.response.status === 403)
         msg = "Bạn ĐÃ đánh giá sản phẩm này rồi!";
       else msg = "LỖI khi đánh giá sản phẩm!";
-        myToastDispatch({
-          "type": "set",
-          "payload": {
-            "variant": "danger",
-            "message": msg
-          }
-        });
-        console.error(error);
+      myToastDispatch({
+        "type": "set",
+        "payload": {
+          "variant": "danger",
+          "message": msg
+        }
+      });
+      console.error(error);
     } finally {
       setLoading(false);
     }
@@ -140,6 +157,11 @@ const ProductDetail = () => {
     setReviews([]);
     fetchReviews();
   }, [q]);
+
+  useEffect(() => {
+    if (pageReview > 1)
+      fetchReviews();
+  }, [pageReview]);
 
   useEffect(() => {
     fetchRelatedProducts();
@@ -160,46 +182,46 @@ const ProductDetail = () => {
         </Link>
       </span>
       <Row className="py-3">
-      <Col md={5} xs={4}>
-        <Image
-          src={product.imageURL}
-          fluid
-          className="rounded"
-        />
-      </Col>
+        <Col md={5} xs={4}>
+          <Image
+            src={product.imageURL}
+            fluid
+            className="rounded"
+          />
+        </Col>
 
-      <Col md={7} xs={8}>
-        <h1 className="mb-3">{product.productName}</h1>
+        <Col md={7} xs={8}>
+          <h1 className="mb-3">{product.productName}</h1>
 
-        <div className="d-flex align-items-center mb-4 gap-4">
-          <div className="fs-5">
-            <span className="text-secondary">Giá:</span>{' '}
-            <strong className="text-dark">{product?.price?.toLocaleString()} VNĐ</strong>
+          <div className="d-flex align-items-center mb-4 gap-4">
+            <div className="fs-5">
+              <span className="text-secondary">Giá:</span>{' '}
+              <strong className="text-dark">{product?.price?.toLocaleString()} VNĐ</strong>
+            </div>
+            <div className="d-flex align-items-center fs-5">
+              <span className="text-secondary me-2">Đánh giá trung bình:</span>
+              <FaStar />{' '}
+              <strong className="text-dark">{product?.avgRating} ({product?.reviewCount} lượt đánh giá)</strong>
+            </div>
           </div>
-          <div className="d-flex align-items-center fs-5">
-            <span className="text-secondary me-2">Đánh giá trung bình:</span>
-            <FaStar />{' '}
-            <strong className="text-dark">{product?.avgRating} ({product?.reviewCount} lượt đánh giá)</strong>
+
+          <hr />
+
+          <h2>Mô tả sản phẩm</h2>
+          <p>{product.description}</p>
+
+          <hr />
+
+          <div className="d-flex gap-2">
+            <Button variant="outline-primary" className="flex-fill">
+              Thêm vào giỏ hàng
+            </Button>
+            <Button variant="success" className="flex-fill">
+              Mua ngay
+            </Button>
           </div>
-        </div>
-
-        <hr />
-
-        <h2>Mô tả sản phẩm</h2>
-        <p>{product.description}</p>
-
-        <hr />
-
-        <div className="d-flex gap-2">
-          <Button variant="outline-primary" className="flex-fill">
-            Thêm vào giỏ hàng
-          </Button>
-          <Button variant="success" className="flex-fill">
-            Mua ngay
-          </Button>
-        </div>
-      </Col>
-    </Row>
+        </Col>
+      </Row>
 
       <Row className="mt-4">
         <Col md={1} xs={3} className="mt-2">
@@ -343,6 +365,11 @@ const ProductDetail = () => {
         <span className="fs-4 fw-medium">Đánh giá và bình luận</span>
         {reviews.map(review =>
           <Review key={review.reviewId} review={review} pId={pId} user={user} />
+        )}
+        {pageReview !== 0 && (
+          <div>
+            <Button variant="link" className="text-decoration-none px-0" onClick={loadMoreReview}>Xem thêm đánh giá</Button>
+          </div>
         )}
         {reviews.length === 0 &&
           <p className="fs-6 my-2 mx-3">Chưa có đánh giá nào</p>

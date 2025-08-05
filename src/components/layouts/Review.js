@@ -1,10 +1,11 @@
-import { memo, useEffect, useState } from "react";
+import { memo, useContext, useEffect, useState } from "react";
 import { Button, Col, Form, Image, Row, Spinner } from "react-bootstrap";
 import { Link } from "react-router-dom";
 import { FaRegStar, FaStar } from "react-icons/fa";
 import moment from "moment";
 import 'moment/locale/vi';
 import Apis, { authApis, endpoints } from "../../configs/Apis";
+import { MyToastContext } from "../../configs/Contexts";
 
 const Review = ({ user, review, pId }) => {
     const [loading, setLoading] = useState(false);
@@ -12,6 +13,7 @@ const Review = ({ user, review, pId }) => {
     const [replies, setReplies] = useState([]);
     const [reply, setReply] = useState('');
     const [page, setPage] = useState(0);
+    const [, myToastDispatch] = useContext(MyToastContext);
 
     useEffect(() => {
         const loadReplies = async () => {
@@ -51,17 +53,42 @@ const Review = ({ user, review, pId }) => {
 
     const handleReply = async (event) => {
         event.preventDefault();
-        if (!validate())
+        if (!validate()) {
+            myToastDispatch({
+                "type": "set",
+                "payload": {
+                    "variant": "danger",
+                    "message": "Nội dung phản hồi là bắt buộc!"
+                }
+            });
             return;
+        }
         try {
             setLoading(true);
             let form = new FormData();
             form.append('parentId', review.reviewId);
             form.append('comment', reply);
             let res = await authApis().post(endpoints['secureReplyReviewProduct'](pId), form);
+            myToastDispatch({
+                "type": "set",
+                "payload": {
+                    "variant": "success",
+                    "message": "Phản hồi thành công!"
+                }
+            });
             setReplies([res.data, ...replies]);
+            setReply('');
+            setShow(false);
+
         } catch (error) {
             console.error(error);
+            myToastDispatch({
+                "type": "set",
+                "payload": {
+                    "variant": "danger",
+                    "message": "LỖI xảy ra khi phản hồi đánh giá!"
+                }
+            });
         } finally {
             setLoading(false);
         }
@@ -98,7 +125,7 @@ const Review = ({ user, review, pId }) => {
                     <Button variant="link" onClick={() => setShow(!show)} className="text-decoration-none px-0">
                         {show ? "Đóng phản hồi" : "Phản hồi"}
                     </Button>
-                    {(review?.replyCount !== 0) &&
+                    {(review?.replyCount !== 0 && replies.length === 0) &&
                         <Button variant="link" onClick={() => setPage(1)} className="text-decoration-none px-0">
                             Xem phản hồi
                         </Button>}
@@ -172,7 +199,7 @@ const Review = ({ user, review, pId }) => {
                 ))}
                 {page !== 0 && (
                     <div>
-                        <Button variant="link" onClick={loadMore}>Xem thêm phản hồi</Button>
+                        <Button variant="link" className="text-decoration-none px-0" onClick={loadMore}>Xem thêm phản hồi</Button>
                     </div>
                 )}
             </div>
