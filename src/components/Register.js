@@ -45,7 +45,7 @@ const Register = () => {
         "type": "text"
     }];
     const [isSeller, setIsSeller] = useState(false);
-    const avatar = useRef();
+    const avatar = useRef(null);
     const [user, setUser] = useState({});
     const [loading, setLoading] = useState(false);
     const [, myToastDispatch] = useContext(MyToastContext);
@@ -108,7 +108,7 @@ const Register = () => {
             return false;
         }
 
-        if (!user['avatar']) {
+        if (!avatar.current.files[0]) {
             myToastDispatch({
                 "type": "set",
                 "payload": {
@@ -146,7 +146,7 @@ const Register = () => {
                     "type": "set",
                     "payload": {
                         "variant": "success",
-                        "message": `Đăng ký thành công! Bạn bây giờ đã có thể đăng nhập vào hệ thống.${isSeller && '\nVui lòng chờ xác nhận của hệ thống để có thể tạo cửa hàng.'}`
+                        "message": `Đăng ký thành công! Bạn bây giờ đã có thể đăng nhập vào hệ thống.${isSeller ? ' \nVui lòng chờ xác nhận của hệ thống để có thể tạo cửa hàng.' : ""}`
                     }
                 });
                 nav("/login");

@@ -16,7 +16,7 @@ const MySpinner = () => {
             }}
         >
 
-            <Spinner className="" animation="grow" variant="primary" />
+            <Spinner animation="grow" variant="primary" />
         </div>
     </>;
 };

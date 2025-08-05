@@ -5,9 +5,8 @@ import Apis, { authApis, endpoints } from "../configs/Apis";
 import Empty from "./Emtpy";
 import MySpinner from "./layouts/MySpinner";
 import { MyToastContext, UserContext } from "../configs/Contexts";
-import moment from "moment";
-import 'moment/locale/vi';
-import { FaRegStar, FaStar } from "react-icons/fa";
+import {  FaStar } from "react-icons/fa";
+import Review from "./layouts/Review";
 
 const ProductDetail = () => {
   const user = useContext(UserContext);
@@ -325,7 +324,7 @@ const ProductDetail = () => {
                   onChange={(e) => setReview(e.target.value)}
                 />
                 <div className="text-end mt-2">
-                  <Button type="submit" variant="primary">
+                  <Button type="submit" variant="primary" disabled={review.trim() === '' || rating === 0}>
                     Gửi đánh giá
                   </Button>
                 </div>
@@ -343,32 +342,7 @@ const ProductDetail = () => {
       <div className="mt-4">
         <span className="fs-4 fw-medium">Đánh giá và bình luận</span>
         {reviews.map(review =>
-          <Row key={review?.reviewId} className="mt-3">
-            <Col md={1} xs={3}>
-              <Image
-                src={review?.avatarURL}
-                fluid
-                className="rounded-circle"
-              />
-            </Col>
-            <Col md={11} xs={9} className="mt-2">
-              <p className="mx-0 my-0 fw-semibold">{review?.username}</p>
-              <div className="d-flex align-items-center mb-1">
-                {[...Array(5)].map((_, i) =>
-                  i < review?.rating ? (
-                    <FaStar key={i} className="text-warning me-1" />
-                  ) : (
-                    <FaRegStar key={i} className="text-warning me-1" />
-                  )
-                )}
-              </div>
-              <small>{moment(review?.createdAt).fromNow()}</small>
-              <p className="mx-0 my-0">{review?.comment}</p>
-              <Button variant="link" className="text-decoration-none">Phản hồi</Button>
-              {(review?.replyCount !== 0) &&
-                <Button variant="link" className="text-decoration-none">Xem phản hồi</Button>}
-            </Col>
-          </Row>
+          <Review key={review.reviewId} review={review} pId={pId} user={user} />
         )}
         {reviews.length === 0 &&
           <p className="fs-6 my-2 mx-3">Chưa có đánh giá nào</p>

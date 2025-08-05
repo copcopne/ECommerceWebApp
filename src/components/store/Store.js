@@ -1,10 +1,10 @@
 import { useContext, useEffect, useState } from "react";
-import { Container, Row, Col, Tab, Nav, Tabs, Card, Button, Image } from "react-bootstrap";
+import { Container, Row, Col, Tab, Nav, Tabs, Card, Button, Image, Form } from "react-bootstrap";
 import { FaStore, FaStar, FaUserFriends, FaRegStar } from "react-icons/fa";
 import { Link, useNavigate, useSearchParams } from "react-router-dom";
-import { UserContext } from "../../configs/Contexts";
+import { MyToastContext, UserContext } from "../../configs/Contexts";
 import Empty from "../Emtpy";
-import Apis, { endpoints } from "../../configs/Apis";
+import Apis, { authApis, endpoints } from "../../configs/Apis";
 import moment from "moment";
 import 'moment/locale/vi';
 import MySpinner from "../layouts/MySpinner";
@@ -18,6 +18,9 @@ const Store = () => {
     const [tabData, setTabData] = useState([]);
     const storeId = q.get("id") || null;
     const [page, setPage] = useState(1);
+    const [rating, setRating] = useState(0);
+    const [review, setReview] = useState('');
+    const [, myToastDispatch] = useContext(MyToastContext);
     const nav = useNavigate();
 
     useEffect(() => {
@@ -55,12 +58,10 @@ const Store = () => {
             setLoading(true);
             let url;
             if (activeKey === "products")
-                url = `${endpoints['storeProducts']}?page=${page}`;
+                url = `${endpoints['storeProducts'](storeId)}?page=${page}`;
             else
                 url = `${endpoints['storeReviews'](storeId)}?page=${page}`;
-            console.info(url);
             let res = await Apis.get(url);
-            console.info(res.data);
             if (res.data.length === 0) {
                 setPage(0);
                 return;
@@ -68,7 +69,13 @@ const Store = () => {
             if (page === 1)
                 setTabData(res.data);
             else {
-                setTabData([...tabData, ...res.data]);
+                let data = res.data.filter(item => {
+                    if (activeKey === "products") {
+                        return !tabData.some(d => d.productId === item.productId);
+                    } else
+                        return !tabData.some(d => d.reviewId === item.reviewId);
+                });
+                setTabData([...tabData, ...data]);
             }
 
         } catch (error) {
@@ -92,6 +99,57 @@ const Store = () => {
         setPage(1);
         setTabData([]);
         setActiveKey(key);
+    };
+
+    const validate = () => {
+        if (rating === 0 || review.trim() === "") {
+            myToastDispatch({
+                "type": "set",
+                "payload": {
+                    "variant": "danger",
+                    "message": "Đánh số sao và nội dung đánh giá là bắt buộc!"
+                }
+            });
+            return false;
+        }
+        return true;
+    };
+    const handleReview = async (event) => {
+        event.preventDefault();
+        if (!validate())
+            return;
+        try {
+            setLoading(true);
+            let form = new FormData();
+            form.append('comment', review);
+            form.append('rating', rating);
+            let res = await authApis().post(endpoints['reviewStore'](storeId), form);
+            if (activeKey === 'reviews')
+                setTabData([res.data, ...tabData]);
+            setReview("");
+            myToastDispatch({
+                "type": "set",
+                "payload": {
+                    "variant": "success",
+                    "message": "Đánh giá thành công!"
+                }
+            });
+        } catch (error) {
+            let msg;
+            if (error.response.status === 403)
+                msg = "Bạn ĐÃ đánh giá cửa hàng này rồi!";
+            else msg = "LỖI khi đánh giá cửa hàng!";
+            myToastDispatch({
+                "type": "set",
+                "payload": {
+                    "variant": "danger",
+                    "message": msg
+                }
+            });
+            console.error(error);
+        } finally {
+            setLoading(false);
+        }
     };
 
     if (empty)
@@ -165,7 +223,60 @@ const Store = () => {
                         </Tab>
 
                         <Tab eventKey="reviews" title="Đánh giá">
-                            {(tabData.length !== 0 && activeKey === "reviews") &&  tabData.map(review =>
+                            <div className="mt-4">
+                                <span className="fs-4 fw-medium">Viết đánh giá</span>
+                                {user ? <Row className="mt-3">
+                                    <Col md={1} xs={3}>
+                                        <Image
+                                            src={user?.avatarURL}
+                                            fluid
+                                            className="rounded-circle"
+                                        />
+                                    </Col>
+                                    <Col md={11} xs={9}>
+                                        <div className="d-flex align-items-center gap-2 mb-2">
+                                            {[1, 2, 3, 4, 5].map((star) => (
+                                                <i
+                                                    key={star}
+                                                    className={`bi ${star <= rating ? "bi-star-fill text-warning" : "bi-star text-secondary"} fs-4`}
+                                                    style={{ cursor: "pointer" }}
+                                                    onClick={() => setRating(star)}
+                                                ></i>
+                                            ))}
+                                            {rating !== 0 &&
+                                                <Button
+                                                    onClick={() => setRating(0)}
+                                                    variant="link"
+                                                    style={{ textDecoration: "none" }}>
+                                                    Xóa đánh giá
+                                                </Button>}
+                                        </div>
+                                        <Form
+                                            onSubmit={handleReview}
+                                        >
+                                            <Form.Control
+                                                as="textarea"
+                                                rows={3}
+                                                placeholder="Viết đánh giá của bạn..."
+                                                value={review}
+                                                onChange={(e) => setReview(e.target.value)}
+                                            />
+                                            <div className="text-end mt-2">
+                                                <Button type="submit" variant="primary">
+                                                    Gửi đánh giá
+                                                </Button>
+                                            </div>
+                                        </Form>
+                                    </Col>
+                                </Row> :
+                                    <p className="my-4 mx-3">
+                                        Vui lòng
+                                        <Link to={`/login?next=`} className="text-primary fw-bold text-decoration-underline mx-1">ĐĂNG NHẬP</Link>
+                                        để đánh giá!
+                                    </p>}
+                            </div>
+
+                            {(tabData.length !== 0 && activeKey === "reviews") && tabData.map(review =>
                                 <Row key={review?.reviewId} className="mt-3">
                                     <Col md={1} xs={3}>
                                         <Image
@@ -190,6 +301,15 @@ const Store = () => {
                                     </Col>
                                 </Row>
                             )}
+
+                            <div xs={12} className="my-3 mx-2">
+
+                                {page !== 0 && tabData.length > 0 && (
+                                    <Button variant="link" onClick={loadMore}>
+                                        Xem thêm đánh giá
+                                    </Button>
+                                )}
+                            </div>
                             {tabData.length === 0 &&
                                 <p className="fs-6 my-2 mx-3">Chưa có đánh giá nào</p>
                             }
