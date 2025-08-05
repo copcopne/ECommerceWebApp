@@ -1,7 +1,7 @@
-import { useContext, useState } from "react";
+import { useContext, useEffect, useState } from "react";
 import { Alert, Button, Form } from "react-bootstrap";
 import MySpinner from "./layouts/MySpinner";
-import { DispatchContext, MyToastContext } from "../configs/Contexts";
+import { DispatchContext, MyToastContext, UserContext } from "../configs/Contexts";
 import Apis, { authApis, endpoints } from "../configs/Apis";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import cookie from 'react-cookies';
@@ -23,6 +23,12 @@ const Login = () => {
     const [q] = useSearchParams();
     const next = q.get("next") || null;
     const nav = useNavigate();
+    const u = useContext(UserContext);
+
+    useEffect (() => {
+        if (u !== null)
+            nav(next ? next : "/");
+    }, [u]);
 
     const validate = () => {
         if (Object.values(user).length === 0) {
@@ -66,8 +72,6 @@ const Login = () => {
                     "type": "login",
                     "payload": u.data
                 });
-
-                nav(next ? next : "/");
 
                 myToastDispatch({
                     "type": "set",

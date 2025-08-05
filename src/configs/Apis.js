@@ -18,7 +18,8 @@ export const endpoints = {
     'reviewProduct': (id) => `/secure/products/${id}/reviews`,
 
     'store': (id) =>  `/stores/${id}`,
-    'createStore': `/secure/stores`,
+    'storeProducts': (id) =>  `/stores/${id}/products`,
+    'secureStore': `/secure/stores`,
     'storeReviews': (id) => `/stores/${id}/reviews`,
     'reviewStore': (id) => `/secure/stores/${id}/reviews`,
 

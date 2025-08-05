@@ -9,7 +9,7 @@ import Register from "./components/Register";
 import Login from "./components/Login";
 import { useEffect, useReducer, useState } from "react";
 import UserReducer from "./reducers/UserReducer";
-import { DispatchContext, MyToastContext, UserContext } from "./configs/Contexts";
+import { DispatchContext, MyToastContext, StoreContext, UserContext } from "./configs/Contexts";
 import Profile from "./components/profile/Profile";
 import EditStore from "./components/store/EditStore";
 import Stats from "./components/store/Stats";
@@ -26,11 +26,13 @@ import Store from "./components/store/Store";
 import EditPassword from "./components/profile/EditPassword";
 import Empty from "./components/Emtpy";
 import Auth from "./components/Auth";
+import StoreReducer from "./reducers/StoreReducer";
 
 function App() {
   const [loading, setLoading] = useState(false);
   const [user, dispatch] = useReducer(UserReducer, null);
   const [myToast, myToastDispatch] = useReducer(MyToastReducer, null);
+  const [store, storeDispatch] = useReducer(StoreReducer, null);
 
   const loadDatas = async () => {
     try {
@@ -42,6 +44,14 @@ function App() {
           "type": "login",
           "payload": u.data
         });
+
+        if (u.role === "ROLE_SELLER") {
+          let store = await authApis().get(endpoints['secureStore']);
+          storeDispatch({
+            "type": "login",
+            "payload": store.data
+          })
+        }
       }
     } catch (error) {
       console.error(error);
@@ -59,38 +69,41 @@ function App() {
   return (
     <UserContext.Provider value={user}>
       <DispatchContext.Provider value={dispatch}>
-        <MyToastContext.Provider value={[myToast, myToastDispatch]}>
+        <StoreContext.Provider value={[store, storeDispatch]}>
+          <MyToastContext.Provider value={[myToast, myToastDispatch]}>
 
-          <BrowserRouter>
-            <Header />
-            <MyToast />
+            <BrowserRouter>
+              <Header />
+              <MyToast />
 
-            <Container>
-              <Routes>
-                <Route path="/" element={<Home />} />
-                <Route path="/search" element={<Search />} />
-                <Route path="/login" element={<Login />} />
-                <Route path="/register" element={<Register />} />
-                <Route path="/details" element={<ProductDetail />} />
-                <Route path="/my-cart" element={<Cart />} />
+              <Container>
+                <Routes>
+                  <Route path="/" element={<Home />} />
+                  <Route path="/search" element={<Search />} />
+                  <Route path="/login" element={<Login />} />
+                  <Route path="/register" element={<Register />} />
+                  <Route path="/details" element={<ProductDetail />} />
+                  <Route path="/my-cart" element={<Cart />} />
 
-                <Route path="/auth" element={<Auth />} />
-                <Route path="/profile" element={<Profile />} />
-                <Route path="/profile/edit-password" element={<EditPassword />} />
+                  <Route path="/auth" element={<Auth />} />
+                  <Route path="/profile" element={<Profile />} />
+                  <Route path="/profile/edit-password" element={<EditPassword />} />
 
-                <Route path="/store" element={<Store />} />
-                <Route path="/store/edit" element={<EditStore />} />
-                <Route path="/store/add-product" element={<AddProduct />} />
-                <Route path="/store/stats" element={<Stats />} />
-                
-                <Route path="*" element={<Empty />} />
-              </Routes>
-            </Container>
+                  <Route path="/stores" element={<Store />} />
+                  <Route path="/stores/edit" element={<EditStore />} />
+                  <Route path="/stores/add-product" element={<AddProduct />} />
+                  <Route path="/stores/stats" element={<Stats />} />
 
-            <Footer />
+                  <Route path="*" element={<Empty />} />
+                </Routes>
+              </Container>
 
-          </BrowserRouter>
-        </MyToastContext.Provider>
+              <Footer />
+
+            </BrowserRouter>
+
+          </MyToastContext.Provider>
+        </StoreContext.Provider>
       </DispatchContext.Provider>
     </UserContext.Provider>
   );

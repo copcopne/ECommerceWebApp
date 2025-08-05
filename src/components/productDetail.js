@@ -172,7 +172,6 @@ const ProductDetail = () => {
       <Col md={7} xs={8}>
         <h1 className="mb-3">{product.productName}</h1>
 
-        {/* Tiền và điểm đánh giá kiểu tối giản */}
         <div className="d-flex align-items-center mb-4 gap-4">
           <div className="fs-5">
             <span className="text-secondary">Giá:</span>{' '}
@@ -213,7 +212,7 @@ const ProductDetail = () => {
         </Col>
         <Col md={3} xs={9} className="mt-2">
           <h5>{store.storeName}</h5>
-          <Link to={`/store?id=${store.storeId}`} className="btn btn-primary">
+          <Link to={`/stores?id=${store.storeId}`} className="btn btn-primary">
             Xem cửa hàng
           </Link>
         </Col>
@@ -366,7 +365,7 @@ const ProductDetail = () => {
               <small>{moment(review?.createdAt).fromNow()}</small>
               <p className="mx-0 my-0">{review?.comment}</p>
               <Button variant="link" className="text-decoration-none">Phản hồi</Button>
-              {review?.replyCount !== 0 &&
+              {(review?.replyCount !== 0) &&
                 <Button variant="link" className="text-decoration-none">Xem phản hồi</Button>}
             </Col>
           </Row>

@@ -1,7 +1,7 @@
 import { useContext, useEffect, useState } from "react";
 import { Container, Row, Col, Tab, Nav, Tabs, Card, Button, Image } from "react-bootstrap";
 import { FaStore, FaStar, FaUserFriends, FaRegStar } from "react-icons/fa";
-import { Link, useSearchParams } from "react-router-dom";
+import { Link, useNavigate, useSearchParams } from "react-router-dom";
 import { UserContext } from "../../configs/Contexts";
 import Empty from "../Emtpy";
 import Apis, { endpoints } from "../../configs/Apis";
@@ -18,13 +18,21 @@ const Store = () => {
     const [tabData, setTabData] = useState([]);
     const storeId = q.get("id") || null;
     const [page, setPage] = useState(1);
+    const nav = useNavigate();
+
+    useEffect(() => {
+        if (!user) {
+            nav(`/auth?next=/stores${storeId ? `?id=${storeId}` : ""}`);
+        }
+    }, [user]);
 
     useEffect(() => {
         const loadStore = async () => {
-            if (!storeId)
+            if (!storeId && user?.role !== "ROLE_SELLER")
                 setEmpty(true);
             else
                 try {
+                    setEmpty(false);
                     setLoading(true);
                     let res = await Apis.get(endpoints['store'](storeId));
                     if (!res.data)
@@ -38,7 +46,7 @@ const Store = () => {
                 }
         };
         loadStore();
-    }, [q]);
+    }, [q, user]);
 
     const loadTabData = async () => {
         if (page === 0)
@@ -47,7 +55,7 @@ const Store = () => {
             setLoading(true);
             let url;
             if (activeKey === "products")
-                url = `${endpoints['products']}?storeId=${storeId}&page=${page}`;
+                url = `${endpoints['storeProducts']}?page=${page}`;
             else
                 url = `${endpoints['storeReviews'](storeId)}?page=${page}`;
             console.info(url);

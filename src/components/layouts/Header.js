@@ -27,7 +27,7 @@ const Header = () => {
       toast({
         "type": "set",
         "payload": {
-          "variant": "light",
+          "variant": "success",
           "message": "Đăng xuất thành công!"
         }
       });
@@ -78,13 +78,13 @@ const Header = () => {
               {!user ? <>
                 <Link to="/login" className='nav-link mx-1'>Đăng nhập</Link>
                 <Link to="/register" className='nav-link mx-1'>Đăng ký</Link></> : <>
+                {user.role === "ROLE_SELLER" && <Link to="/store" className='nav-link mx-1'>Cửa hàng của tôi</Link>}
                 <NavDropdown
                   title={user.name}
                   id="navbarScrollingDropdown"
                   className='m-2'
                 >
                   <Link to="/profile" className='dropdown-item'>Hồ sơ</Link>
-                  {user.role === "ROLE_SELLER" && <Link to="/store" className='dropdown-item'>Cửa hàng của tôi</Link>}
                   <NavDropdown.Divider />
                   <Button onClick={logout} className='dropdown-item text-danger'>Đăng xuất</Button>
                 </NavDropdown>
