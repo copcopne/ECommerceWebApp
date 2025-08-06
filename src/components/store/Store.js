@@ -1,6 +1,6 @@
-import { useContext, useEffect, useRef, useState } from "react";
-import { Container, Row, Col, Tab, Nav, Tabs, Card, Button, Image, Form, Modal } from "react-bootstrap";
-import { FaStore, FaStar, FaUserFriends, FaRegStar } from "react-icons/fa";
+import { useContext, useEffect, useState } from "react";
+import { Container, Row, Col, Tab, Tabs, Button, Image, Form } from "react-bootstrap";
+import { FaStore, FaStar, FaRegStar } from "react-icons/fa";
 import { Link, useNavigate, useSearchParams } from "react-router-dom";
 import { MyToastContext, StoreContext, UserContext } from "../../configs/Contexts";
 import Empty from "../Emtpy";
@@ -13,10 +13,10 @@ import StoreModal from "../layouts/StoreModal";
 import ProductModal from "../layouts/ProductModal";
 const Store = () => {
     const user = useContext(UserContext);
-    const [myStore, ] = useContext(StoreContext);
+    const [myStore,] = useContext(StoreContext);
     const [store, setStore] = useState({});
     const [empty, setEmpty] = useState(false);
-    const [q, ] = useSearchParams();
+    const [q,] = useSearchParams();
     const [loading, setLoading] = useState(false);
     const [activeKey, setActiveKey] = useState("products");
     const [tabData, setTabData] = useState([]);
@@ -24,18 +24,19 @@ const Store = () => {
     const [rating, setRating] = useState(0);
     const [review, setReview] = useState('');
     const [, myToastDispatch] = useContext(MyToastContext);
-    const nav = useNavigate();
-    const storeId = q.get("id") || ((myStore && Object.keys(myStore).length === 0) ? null : myStore?.storeId);
-    const isMyStore = storeId == myStore?.storeId;
     const [show, setShow] = useState(false);
     const [showNewProduct, setShowNewProduct] = useState(false);
+    const nav = useNavigate();
+
+    const storeId = q.get("id") || ((myStore && Object.keys(myStore).length === 0) ? null : myStore?.storeId);
+    const isMyStore = Boolean(myStore?.storeId) && storeId == myStore.storeId;
 
     useEffect(() => {
         if (!user) {
             nav(`/auth?next=/stores${storeId ? `?id=${storeId}` : ""}`);
         }
     }, [user]);
-    
+
     useEffect(() => {
         const loadStore = async () => {
             if (storeId === undefined) return;
@@ -45,11 +46,17 @@ const Store = () => {
             }
             try {
                 setLoading(true);
-                let res = await Apis.get(endpoints['store'](storeId));
-                if (!res.data)
-                    setEmpty(true);
-                else
-                    setStore(res.data);
+                if (storeId === undefined)
+                    setTimeout(() => {
+                        setStore(myStore);
+                    }, 1000);
+                else {
+                    let res = await Apis.get(endpoints['store'](storeId));
+                    if (!res.data)
+                        setEmpty(true);
+                    else
+                        setStore(res.data);
+                }
             } catch (error) {
                 console.error(error);
                 setEmpty(true);
@@ -63,9 +70,17 @@ const Store = () => {
     }, [q, myStore]);
 
     useEffect(() => {
+        setStore({});
+        setTabData([]);
         if (empty)
             setEmpty(false);
     }, [q]);
+
+
+    useEffect(() => {
+        if (empty !== true)
+            loadTabData();
+    }, [activeKey, page]);
 
     const loadTabData = async () => {
         if (page === 0 || storeId === undefined || storeId === null)
@@ -104,11 +119,6 @@ const Store = () => {
         if (!loading && page !== 0)
             setPage(page + 1);
     };
-
-    useEffect(() => {
-        if (empty !== true)
-            loadTabData();
-    }, [activeKey, page]);
 
     const handleChangeTab = (key) => {
         if (key === activeKey) return;
@@ -344,22 +354,22 @@ const Store = () => {
                     </Button>
                 </div>}
 
-            <StoreModal 
-                show={show} 
-                setShow={setShow} 
-                myToastDispatch={myToastDispatch} 
-                setStore={setStore} 
-                setLoading={setLoading} 
+            <StoreModal
+                show={show}
+                setShow={setShow}
+                myToastDispatch={myToastDispatch}
+                setStore={setStore}
+                setLoading={setLoading}
             />
 
-            <ProductModal 
-                showNewProduct={showNewProduct} 
-                setShowNewProduct={setShowNewProduct} 
-                setLoading={setLoading} 
-                activeKey={activeKey} 
-                myToastDispatch={myToastDispatch} 
-                setTabData={setTabData} 
-                tabData={tabData} 
+            <ProductModal
+                showNewProduct={showNewProduct}
+                setShowNewProduct={setShowNewProduct}
+                setLoading={setLoading}
+                activeKey={activeKey}
+                myToastDispatch={myToastDispatch}
+                setTabData={setTabData}
+                tabData={tabData}
             />
 
         </>
