@@ -1,36 +1,44 @@
 import { useContext, useEffect, useRef, useState } from "react";
 import { Button, Col, Form, Row } from "react-bootstrap";
-import { UserContext } from "../../configs/Contexts";
+import { DispatchContext, MyToastContext, UserContext } from "../../configs/Contexts";
 import { Link, useNavigate } from "react-router-dom";
 import MySpinner from "../layouts/MySpinner";
+import { authApis, endpoints } from "../../configs/Apis";
 
 const Profile = () => {
     const info = [{
         "title": "Tên đăng nhập",
         "field": "username",
-        "type": "text"
+        "type": "text",
+        "disabled": true
     }, {
         "title": "Họ và tên",
         "field": "name",
-        "type": "text"
+        "type": "text",
+        "disabled": false
     }, {
         "title": "Số điện thoại",
         "field": "phone",
-        "type": "tel"
+        "type": "tel",
+        "disabled": true
     }, {
         "title": "Email",
         "field": "email",
-        "type": "email"
+        "type": "email",
+        "disabled": true
     }, {
         "title": "Địa chỉ",
         "field": "address",
-        "type": "text"
+        "type": "text",
+        "disabled": false
     }];
     const nav = useNavigate();
     const [loading, setLoading] = useState(false);
     const avatar = useRef();
     const user = useContext(UserContext);
+    const dispatch = useContext(DispatchContext);
     const [formData, setFormData] = useState(null);
+    const [, myToastDispatch] = useContext(MyToastContext);
 
     useEffect(() => {
         if (!user) {
@@ -40,19 +48,68 @@ const Profile = () => {
         }
     }, [user]);
 
-    const handleUploadAvatar = () => {
-
+    const handleUploadAvatar = async () => {
+        try {
+            setLoading(true);
+            let form = new FormData();
+            form.append("avatar", avatar.current.files[0]);
+            let res = await authApis().patch(endpoints['profile'], form);
+            dispatch({
+                "type": "login",
+                "payload": res.data
+            });
+            myToastDispatch({
+                "type": "set",
+                "payload": {
+                    "variant": "success",
+                    "message": "Thay đổi ảnh đại diện thành công!"
+                }
+            });
+        } catch (error) {
+            myToastDispatch({
+                "type": "set",
+                "payload": {
+                    "variant": "danger",
+                    "message": "LỖI xảy ra khi thay đổi ảnh đại diện!"
+                }
+            });
+            console.error(error);
+        } finally {
+            setLoading(false);
+        };
     };
 
     const validate = () => {
         return true;
     }
-    const submitEdit = (event) => {
+    const submitEdit = async (event) => {
         event.preventDefault();
         if (validate())
             try {
                 setLoading(true);
+                let form = new FormData();
+                for (let key in formData)
+                    form.append(key, formData[key]);
+                let res = await authApis().patch(endpoints['profile'], form);
+                dispatch({
+                    "type": "login",
+                    "payload": res.data
+                });
+                myToastDispatch({
+                    "type": "set",
+                    "payload": {
+                        "variant": "success",
+                        "message": "Thay đổi thông tin thành công!"
+                    }
+                });
             } catch (error) {
+                myToastDispatch({
+                    "type": "set",
+                    "payload": {
+                        "variant": "danger",
+                        "message": "LỖI xảy ra khi thay đổi thông tin!"
+                    }
+                });
                 console.error(error);
             } finally {
                 setLoading(false);
@@ -69,7 +126,10 @@ const Profile = () => {
                         <div className="d-flex align-items-center">
                             <img src={formData.avatarURL} width={80} height={80} className="rounded-circle" />
                             <div className="pt-2 px-3">
-                                <h4>{formData.name}</h4>
+                                <div style={{ width: "100%", maxWidth: "300px" }}>
+                                    <h4 style={{ wordBreak: "break-word" }}>{user?.name}</h4>
+                                </div>
+
                                 <Form>
                                     <span
                                         onClick={() => avatar.current?.click()}
@@ -113,6 +173,7 @@ const Profile = () => {
                                                 onChange={e => setFormData({ ...formData, [i.field]: e.target.value })}
                                                 type={i.type}
                                                 placeholder={i.title}
+                                                disabled={i.disabled}
                                             />
                                         </Col>
                                     </Row>

@@ -1,8 +1,9 @@
 import { useContext, useState } from "react";
 import { Button, Col, Form, Row } from "react-bootstrap";
-import { MyToastContext } from "../../configs/Contexts";
+import { DispatchContext, MyToastContext, UserContext } from "../../configs/Contexts";
 import MySpinner from "../layouts/MySpinner";
 import { Link, useNavigate } from "react-router-dom";
+import Apis, { authApis, endpoints } from "../../configs/Apis";
 
 const EditPassword = () => {
     const info = [{
@@ -19,13 +20,55 @@ const EditPassword = () => {
     const [loading, setLoading] = useState(false);
     const [data, setData] = useState({});
     const [, myToastDispatch] = useContext(MyToastContext);
+    const dispatch = useContext(DispatchContext);
     const validate = () => {
+        if (Object.values(data).length === 0) {
+            myToastDispatch({
+                "type": "set",
+                "payload": {
+                    "variant": "danger",
+                    "message": "Mật khẩu cũ và mới là bắt buộc!"
+                }
+            })
+            return false;
+        }
+
+        for (let i of info)
+            if (!data[i.field]) {
+                myToastDispatch({
+                    "type": "set",
+                    "payload": {
+                        "variant": "danger",
+                        "message": "Vui lòng nhập " + i.title + "!"
+                    }
+                })
+                return false;
+            }
+
+        if (data["oldPassword"] !== data["password"]) {
+            myToastDispatch({
+                "type": "set",
+                "payload": {
+                    "variant": "danger",
+                    "message": "Mật khẩu mới không khớp!"
+                }
+            })
+            return false;
+        }
         return true;
     };
-    const submitEidt = () => {
+    const submitEidt = async () => {
         if (validate())
             try {
                 setLoading(true);
+                let form = new FormData();
+                form.append("oldPassword", data.password);
+                form.append("password", data.newPassword);
+                let u = await authApis().patch(endpoints['profile'], form);
+                dispatch({
+                    "type": "login",
+                    "payload": u.data
+                });
                 myToastDispatch({
                     "type": "set",
                     "payload": {
@@ -33,6 +76,7 @@ const EditPassword = () => {
                         "message": "Đổi mật khẩu thành công"
                     }
                 });
+
             } catch (error) {
                 let msg;
                 if (error.response?.status === 401)
@@ -64,7 +108,7 @@ const EditPassword = () => {
     return <>
 
         {loading && <MySpinner />}
-        
+
         <span className="fs-4 fw-medium">
             <a onClick={backHandler} className="text-dark" style={{ cursor: "pointer" }}>
                 Hồ sơ của bạn

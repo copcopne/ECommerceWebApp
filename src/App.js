@@ -46,7 +46,6 @@ function App() {
         });
         if (u.data.role === "ROLE_SELLER") {
           let store = await authApis().get(endpoints['secureStore']);
-          console.info(store.data);
           storeDispatch({
             "type": "login",
             "payload": store.data

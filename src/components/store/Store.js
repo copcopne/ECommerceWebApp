@@ -68,7 +68,7 @@ const Store = () => {
         try {
             setLoading(true);
             let form = new FormData();
-            form.append("file", productImg.current.files[0]);
+            form.append("image", productImg.current.files[0]);
             form.append("categoryId", categoryId);
             form.append("productName", productName);
             form.append("price", price);
@@ -582,7 +582,7 @@ const Store = () => {
                             <Form.Control
                                 type="number"
                                 min={0}
-                                value={price}
+                                value={price}   
                                 onChange={e => setPrice(e.target.value)}
                             />
                         </Form.Group>
@@ -593,7 +593,7 @@ const Store = () => {
                         Hủy
                     </Button>
                     <Button variant="primary" onClick={handleUploadProduct}>
-                        Đăng ký cửa hàng
+                        Thêm sản phẩm
                     </Button>
                 </Modal.Footer>
             </Modal>
