@@ -45,7 +45,7 @@ const EditPassword = () => {
                 return false;
             }
 
-        if (data["oldPassword"] !== data["password"]) {
+        if (data["newPassword"] !== data["confirm"]) {
             myToastDispatch({
                 "type": "set",
                 "payload": {
@@ -62,8 +62,8 @@ const EditPassword = () => {
             try {
                 setLoading(true);
                 let form = new FormData();
-                form.append("oldPassword", data.password);
-                form.append("password", data.newPassword);
+                form.append("oldPassword", data["password"]);
+                form.append("password", data["newPassword"]);
                 let u = await authApis().patch(endpoints['profile'], form);
                 dispatch({
                     "type": "login",
@@ -76,6 +76,7 @@ const EditPassword = () => {
                         "message": "Đổi mật khẩu thành công"
                     }
                 });
+                nav("/profile");
 
             } catch (error) {
                 let msg;

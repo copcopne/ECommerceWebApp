@@ -9,7 +9,7 @@ import Register from "./components/Register";
 import Login from "./components/Login";
 import { useEffect, useReducer, useState } from "react";
 import UserReducer from "./reducers/UserReducer";
-import { DispatchContext, MyToastContext, StoreContext, UserContext } from "./configs/Contexts";
+import { DispatchContext, MyCartContext, MyToastContext, StoreContext, UserContext } from "./configs/Contexts";
 import Profile from "./components/profile/Profile";
 import EditStore from "./components/store/EditStore";
 import Stats from "./components/store/Stats";
@@ -33,6 +33,7 @@ function App() {
   const [user, dispatch] = useReducer(UserReducer, null);
   const [myToast, myToastDispatch] = useReducer(MyToastReducer, null);
   const [store, storeDispatch] = useReducer(StoreReducer, null);
+  const [cartCounter, cartDispatch] = useReducer(MyCartContext, 0);
 
   const loadDatas = async () => {
     try {
@@ -66,45 +67,47 @@ function App() {
     return <MySpinner />
 
   return (
-    <UserContext.Provider value={user}>
-      <DispatchContext.Provider value={dispatch}>
-        <StoreContext.Provider value={[store, storeDispatch]}>
-          <MyToastContext.Provider value={[myToast, myToastDispatch]}>
+    <MyCartContext.Provider value={[cartCounter, cartDispatch]}>
+      <UserContext.Provider value={user}>
+        <DispatchContext.Provider value={dispatch}>
+          <StoreContext.Provider value={[store, storeDispatch]}>
+            <MyToastContext.Provider value={[myToast, myToastDispatch]}>
 
-            <BrowserRouter>
-              <Header />
-              <MyToast />
+              <BrowserRouter>
+                <Header />
+                <MyToast />
 
-              <Container>
-                <Routes>
-                  <Route path="/" element={<Home />} />
-                  <Route path="/search" element={<Search />} />
-                  <Route path="/login" element={<Login />} />
-                  <Route path="/register" element={<Register />} />
-                  <Route path="/details" element={<ProductDetail />} />
-                  <Route path="/my-cart" element={<Cart />} />
+                <Container>
+                  <Routes>
+                    <Route path="/" element={<Home />} />
+                    <Route path="/search" element={<Search />} />
+                    <Route path="/login" element={<Login />} />
+                    <Route path="/register" element={<Register />} />
+                    <Route path="/details" element={<ProductDetail />} />
+                    <Route path="/my-cart" element={<Cart />} />
 
-                  <Route path="/auth" element={<Auth />} />
-                  <Route path="/profile" element={<Profile />} />
-                  <Route path="/profile/edit-password" element={<EditPassword />} />
+                    <Route path="/auth" element={<Auth />} />
+                    <Route path="/profile" element={<Profile />} />
+                    <Route path="/profile/edit-password" element={<EditPassword />} />
 
-                  <Route path="/stores" element={<Store />} />
-                  <Route path="/stores/edit" element={<EditStore />} />
-                  <Route path="/stores/add-product" element={<AddProduct />} />
-                  <Route path="/stores/stats" element={<Stats />} />
+                    <Route path="/stores" element={<Store />} />
+                    <Route path="/stores/edit" element={<EditStore />} />
+                    <Route path="/stores/add-product" element={<AddProduct />} />
+                    <Route path="/stores/stats" element={<Stats />} />
 
-                  <Route path="*" element={<Empty />} />
-                </Routes>
-              </Container>
+                    <Route path="*" element={<Empty />} />
+                  </Routes>
+                </Container>
 
-              <Footer />
+                <Footer />
 
-            </BrowserRouter>
+              </BrowserRouter>
 
-          </MyToastContext.Provider>
-        </StoreContext.Provider>
-      </DispatchContext.Provider>
-    </UserContext.Provider>
+            </MyToastContext.Provider>
+          </StoreContext.Provider>
+        </DispatchContext.Provider>
+      </UserContext.Provider>
+    </MyCartContext.Provider>
   );
 }
 

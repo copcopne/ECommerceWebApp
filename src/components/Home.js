@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { Button, Card, Col, Row } from "react-bootstrap";
 import { Link, useSearchParams } from "react-router-dom";
 import Apis, { endpoints } from "../configs/Apis";
+import Product from "./layouts/Product";
 
 const Home = () => {
     const [loading, setLoading] = useState(false);
@@ -89,21 +90,12 @@ const Home = () => {
             </div>
         </div>
 
-
         <div className="mt-3">
             <span className="fs-4 fw-medium">Danh sách sản phẩm</span>
             <Row className="my-3">
                 {products.map((p) => (
                     <Col key={p.productId} md={2} xs={3} className="p-1">
-                        <Link to={`/details?id=${p.productId}`} className="text-decoration-none text-dark">
-                            <Card className="rounded h-100 d-flex flex-column justify-content-between">
-                                <Card.Img variant="top" className="rounded" src={p.imageURL} />
-                                <Card.Body>
-                                    <Card.Title>{p.productName}</Card.Title>
-                                    <Card.Text>{p.price} VNĐ</Card.Text>
-                                </Card.Body>
-                            </Card>
-                        </Link>
+                        <Product p={p} />
                     </Col>
                 ))}
 

@@ -8,12 +8,15 @@ import Apis, { authApis, endpoints } from "../../configs/Apis";
 import moment from "moment";
 import 'moment/locale/vi';
 import MySpinner from "../layouts/MySpinner";
+import Product from "../layouts/Product";
+import StoreModal from "../layouts/StoreModal";
+import ProductModal from "../layouts/ProductModal";
 const Store = () => {
     const user = useContext(UserContext);
-    const [myStore,] = useContext(StoreContext);
+    const [myStore, ] = useContext(StoreContext);
     const [store, setStore] = useState({});
     const [empty, setEmpty] = useState(false);
-    const [q,] = useSearchParams();
+    const [q, ] = useSearchParams();
     const [loading, setLoading] = useState(false);
     const [activeKey, setActiveKey] = useState("products");
     const [tabData, setTabData] = useState([]);
@@ -24,141 +27,8 @@ const Store = () => {
     const nav = useNavigate();
     const storeId = q.get("id") || ((myStore && Object.keys(myStore).length === 0) ? null : myStore?.storeId);
     const isMyStore = storeId == myStore?.storeId;
-
-
     const [show, setShow] = useState(false);
-    const [storeName, setStoreName] = useState('');
-    const [storeDescription, setStoreDescription] = useState('');
-    const avatar = useRef(null);
-
-
     const [showNewProduct, setShowNewProduct] = useState(false);
-    const [productName, setProductName] = useState('');
-    const [productDescription, setProductDescription] = useState('');
-    const [categoryId, setCategoryId] = useState('');
-    const [price, setPrice] = useState(0);
-    const productImg = useRef(null);
-    const [categories, setCategories] = useState([]);
-
-    useEffect(() => {
-        const loadCates = async () => {
-
-            if (showNewProduct)
-                try {
-                    setLoading(true);
-                    let res = await Apis.get(endpoints['categories']);
-                    setCategories(res.data);
-                } catch (error) {
-                    console.error(error);
-                } finally {
-                    setLoading(false);
-                };
-        };
-        loadCates();
-    }, [showNewProduct]);
-
-    const validateProduct = () => {
-        return true; // xử lý sau nhé mệt r :) 
-    };
-
-    const handleUploadProduct = async (event) => {
-        event.preventDefault();
-        if (!validateProduct())
-            return;
-        try {
-            setLoading(true);
-            let form = new FormData();
-            form.append("image", productImg.current.files[0]);
-            form.append("categoryId", categoryId);
-            form.append("productName", productName);
-            form.append("price", price);
-            form.append("description", productDescription);
-            console.info(form);
-            let res = await authApis().post(endpoints['secureProducts'], form);
-            if (activeKey === 'products')
-                setTabData([res.data, ...tabData]);
-            myToastDispatch({
-                "type": "set",
-                "payload": {
-                    "variant": "success",
-                    "message": "Tạo sản phẩm thành công!"
-                }
-            });
-        } catch (error) {
-            myToastDispatch({
-                "type": "set",
-                "payload": {
-                    "variant": "danger",
-                    "message": "LỖI xảy ra khi tạo sản phẩm!"
-                }
-            });
-            console.error(error);
-        } finally {
-            setLoading(false);
-        }
-    };
-
-    const validateRegister = () => {
-        if (storeName.trim() === '' || storeDescription.trim() === '') {
-            myToastDispatch({
-                "type": "set",
-                "payload": {
-                    "variant": "danger",
-                    "message": "Tên cửa hàng và mô tả là bắt buộc!"
-                }
-            });
-            return false;
-        }
-
-        if (!avatar.current.files[0]) {
-            myToastDispatch({
-                "type": "set",
-                "payload": {
-                    "variant": "danger",
-                    "message": "Vui lòng chọn ảnh đại diện cho cửa hàng!"
-                }
-            });
-            return false;
-        }
-        return true;
-    }
-    const handleRegister = async (event) => {
-        event.preventDefault();
-        if (!validateRegister())
-            return;
-        try {
-            setLoading(true);
-            let form = new FormData();
-            form.append('storeName', storeName);
-            form.append('description', storeDescription);
-            if (avatar.current.files.length > 0) {
-                form.append("avatar", avatar.current.files[0]);
-            }
-            let res = await authApis().post(endpoints['secureStore'], form);
-            setStore(res.data);
-            setShow(false);
-            setStoreName('');
-            setStoreDescription('');
-            myToastDispatch({
-                "type": "set",
-                "payload": {
-                    "variant": "success",
-                    "message": "Tạo cửa hàng thành công!"
-                }
-            });
-        } catch (error) {
-            myToastDispatch({
-                "type": "set",
-                "payload": {
-                    "variant": "danger",
-                    "message": "LỖI xảy ra khi tạo cửa hàng!"
-                }
-            });
-            console.error(error);
-        } finally {
-            setLoading(false);
-        }
-    };
 
     useEffect(() => {
         if (!user) {
@@ -168,7 +38,6 @@ const Store = () => {
     
     useEffect(() => {
         const loadStore = async () => {
-
             if (storeId === undefined) return;
             if (storeId === null) {
                 user.role !== "ROLE_SELLER" && setEmpty(true);
@@ -176,7 +45,6 @@ const Store = () => {
             }
             try {
                 setLoading(true);
-                let id = storeId ? storeId : myStore.storeId;
                 let res = await Apis.get(endpoints['store'](storeId));
                 if (!res.data)
                     setEmpty(true);
@@ -275,6 +143,7 @@ const Store = () => {
             if (activeKey === 'reviews')
                 setTabData([res.data, ...tabData]);
             setReview("");
+            setRating(0);
             myToastDispatch({
                 "type": "set",
                 "payload": {
@@ -354,15 +223,7 @@ const Store = () => {
                                 <Row className="p-3">
                                     {(tabData.length !== 0 && activeKey === "products") && tabData.map(p =>
                                         <Col key={`p${p.productId}`} md={2} xs={3} className="p-1">
-                                            <Link to={`/details?id=${p.productId}`} className="text-decoration-none text-dark">
-                                                <Card className="rounded h-100 d-flex flex-column justify-content-between">
-                                                    <Card.Img variant="top" className="rounded" src={p.imageURL} />
-                                                    <Card.Body>
-                                                        <Card.Title>{p.productName}</Card.Title>
-                                                        <Card.Text>{p.price} VNĐ</Card.Text>
-                                                    </Card.Body>
-                                                </Card>
-                                            </Link>
+                                            <Product p={p} />
                                         </Col>)}
                                     {page !== 0 && tabData.length > 0 && (
                                         <Col xs={12} className="text-center my-3">
@@ -483,120 +344,23 @@ const Store = () => {
                     </Button>
                 </div>}
 
-            <Modal show={show} onHide={() => setShow(false)}>
-                <Modal.Header closeButton>
-                    <Modal.Title>Đơn tạo cửa hàng</Modal.Title>
-                </Modal.Header>
-                <Modal.Body>
-                    <Form>
-                        <Form.Group className="mb-3">
-                            <Form.Label>Ảnh đại diện</Form.Label>
-                            <Form.Control
-                                size="sm"
-                                type="file"
-                                ref={avatar}
-                                accept="image/png, image/jpeg"
-                            />
-                        </Form.Group>
-                        <Form.Group className="mb-3">
-                            <Form.Label>Tên cửa hàng</Form.Label>
-                            <Form.Control
-                                type="text"
-                                value={storeName}
-                                onChange={e => setStoreName(e.target.value)}
-                            />
-                        </Form.Group>
+            <StoreModal 
+                show={show} 
+                setShow={setShow} 
+                myToastDispatch={myToastDispatch} 
+                setStore={setStore} 
+                setLoading={setLoading} 
+            />
 
-                        <Form.Group
-                            className="mb-3"
-                        >
-                            <Form.Label>Mô tả cửa hàng</Form.Label>
-                            <Form.Control
-                                as="textarea"
-                                rows={3}
-                                value={storeDescription}
-                                onChange={e => setStoreDescription(e.target.value)} />
-                        </Form.Group>
-                    </Form>
-                </Modal.Body>
-                <Modal.Footer>
-                    <Button variant="secondary" onClick={() => setShow(false)}>
-                        Hủy
-                    </Button>
-                    <Button variant="primary" onClick={handleRegister}>
-                        Đăng ký cửa hàng
-                    </Button>
-                </Modal.Footer>
-            </Modal>
-
-            <Modal show={showNewProduct} onHide={() => setShowNewProduct(false)}>
-                <Modal.Header closeButton>
-                    <Modal.Title>Sản phẩm mới</Modal.Title>
-                </Modal.Header>
-                <Modal.Body>
-                    <Form>
-                        <Form.Group className="mb-3">
-                            <Form.Label>Danh mục</Form.Label>
-                            <Form.Select
-                                value={categoryId}
-                                onChange={(e) => setCategoryId(e.target.value)}
-                            >
-                                <option value="">-- Chọn danh mục --</option>
-                                {categories.map(c => (
-                                    <option key={c.categoryId} value={c.categoryId}>{c.categoryName}</option>
-                                ))}
-                            </Form.Select>
-                        </Form.Group>
-
-                        <Form.Group className="mb-3">
-                            <Form.Label>Ảnh sản phẩm</Form.Label>
-                            <Form.Control
-                                size="sm"
-                                type="file"
-                                ref={productImg}
-                                accept="image/png, image/jpeg"
-                            />
-                        </Form.Group>
-
-                        <Form.Group className="mb-3">
-                            <Form.Label>Tên sản phẩm</Form.Label>
-                            <Form.Control
-                                type="text"
-                                value={productName}
-                                onChange={e => setProductName(e.target.value)}
-                            />
-                        </Form.Group>
-
-                        <Form.Group
-                            className="mb-3"
-                        >
-                            <Form.Label>Mô tả sản phẩm</Form.Label>
-                            <Form.Control
-                                as="textarea"
-                                rows={3}
-                                value={productDescription}
-                                onChange={e => setProductDescription(e.target.value)} />
-                        </Form.Group>
-                        <Form.Group className="mb-3">
-                            <Form.Label>Giá tiền (VNĐ)</Form.Label>
-                            <Form.Control
-                                type="number"
-                                min={0}
-                                value={price}   
-                                onChange={e => setPrice(e.target.value)}
-                            />
-                        </Form.Group>
-                    </Form>
-                </Modal.Body>
-                <Modal.Footer>
-                    <Button variant="secondary" onClick={() => setShowNewProduct(false)}>
-                        Hủy
-                    </Button>
-                    <Button variant="primary" onClick={handleUploadProduct}>
-                        Thêm sản phẩm
-                    </Button>
-                </Modal.Footer>
-            </Modal>
+            <ProductModal 
+                showNewProduct={showNewProduct} 
+                setShowNewProduct={setShowNewProduct} 
+                setLoading={setLoading} 
+                activeKey={activeKey} 
+                myToastDispatch={myToastDispatch} 
+                setTabData={setTabData} 
+                tabData={tabData} 
+            />
 
         </>
     );

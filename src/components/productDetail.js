@@ -1,5 +1,5 @@
 import { useContext, useEffect, useState } from "react";
-import { Button, Card, Col, Container, Form, Image, Row } from "react-bootstrap";
+import { Button, Card, Col, Container, Form, Image, Modal, Row } from "react-bootstrap";
 import { Link, useSearchParams } from "react-router-dom";
 import Apis, { authApis, endpoints } from "../configs/Apis";
 import Empty from "./Emtpy";
@@ -13,6 +13,7 @@ const ProductDetail = () => {
   const [loading, setLoading] = useState();
   const [empty, setEmpty] = useState(false);
   const [product, setProduct] = useState({});
+  const [otherProduct, setOtherProduct] = useState({});
   const [relatedProducts, setRelatedProducts] = useState([]);
   const [page, setPage] = useState(1);
   const [store, setStore] = useState({});
@@ -23,6 +24,8 @@ const ProductDetail = () => {
   const [pageReview, setPageReview] = useState(1);
   const [, myToastDispatch] = useContext(MyToastContext);
   let pId = q.get("id");
+
+  const [show, setShow] = useState(false);
 
   const fetchProduct = async () => {
     try {
@@ -110,6 +113,31 @@ const ProductDetail = () => {
     }
     return true;
   };
+  const showCompare = async (productId) => {
+    try {
+      setShow(true);
+      setLoading(true);
+      let res = await Apis.get(endpoints['compare'](product.productId, productId));
+      console.info(res.data);
+      for (let p of res.data) {
+        if (p.productId === product.productId)
+          setProduct(p);
+        else
+          setOtherProduct(p);
+      }
+    } catch (error) {
+      console.error(error);
+      myToastDispatch({
+        "type": "set",
+        "payload": {
+          "variant": "danger",
+          "message": "LỖI xảy ra khi tải dữ liệu!"
+        }
+      });
+    } finally {
+      setLoading(false);
+    }
+  };
   const handleReview = async (event) => {
     event.preventDefault();
     if (!validate())
@@ -156,7 +184,16 @@ const ProductDetail = () => {
     setPageReview(1);
     setReviews([]);
     fetchReviews();
+
+    setShow(false);
   }, [q]);
+
+  useEffect(() => {
+    if (!show)
+      setTimeout(() =>
+        setOtherProduct({})
+        , 200);
+  }, [show]);
 
   useEffect(() => {
     if (pageReview > 1)
@@ -202,7 +239,7 @@ const ProductDetail = () => {
             <div className="d-flex align-items-center fs-5">
               <span className="text-secondary me-2">Đánh giá trung bình:</span>
               <FaStar />{' '}
-              <strong className="text-dark">{product?.avgRating} ({product?.reviewCount} lượt đánh giá)</strong>
+              <strong className="text-dark"> {product?.avgRating ? product?.avgRating : 0} ({product?.reviewCount ? product?.reviewCount : 0} lượt đánh giá)</strong>
             </div>
           </div>
 
@@ -214,11 +251,8 @@ const ProductDetail = () => {
           <hr />
 
           <div className="d-flex gap-2">
-            <Button variant="outline-primary" className="flex-fill">
+            <Button variant="outline-success" className="flex-fill">
               Thêm vào giỏ hàng
-            </Button>
-            <Button variant="success" className="flex-fill">
-              Mua ngay
             </Button>
           </div>
         </Col>
@@ -252,24 +286,38 @@ const ProductDetail = () => {
         <div className="d-flex overflow-auto mt-3 pb-2" style={{ gap: "1rem" }}>
           {relatedProducts.length > 0 ? (
             <>
-              {relatedProducts.map((product) => (
-                <div key={`r${product.productId}`} style={{ minWidth: "160px", flexShrink: 0 }}>
-                  <Link to={`/details?id=${product.productId}`} className="text-decoration-none text-dark">
+              {relatedProducts.map((p) => (
+                <div key={`r${p.productId}`} style={{ minWidth: "160px", flexShrink: 0 }}>
+                  <Link to={`/details?id=${p.productId}`} className="text-decoration-none text-dark">
                     <Card className="rounded h-100 d-flex flex-column justify-content-between">
-                      <Card.Img variant="top" className="rounded" src={product.imageURL} />
+                      <Card.Img variant="top" className="rounded" src={p.imageURL} />
                       <Card.Body>
-                        <Card.Title>{product.productName}</Card.Title>
-                        <Card.Text>{product.price} VNĐ</Card.Text>
+                        <Card.Title>{p.productName}</Card.Title>
+                        <Card.Text>{p.price} VNĐ</Card.Text>
+                        {p.storeId.storeId !== product.storeId.storeId &&
+                          <Button
+                            variant="outline-primary"
+                            size="sm"
+                            className="mt-2 mx-1"
+                            onClick={(e) => {
+                              e.preventDefault();
+                              showCompare(p.productId);
+                            }}
+                          >
+                            So sánh
+                          </Button>}
+
                         <Button
-                          variant="outline-primary"
+                          variant="outline-success"
                           size="sm"
-                          className="mt-2"
+                          className="mt-2 mx-1"
                           onClick={(e) => {
                             e.preventDefault();
                           }}
                         >
-                          So sánh
+                          Thêm vào giỏ hàng
                         </Button>
+
                       </Card.Body>
                     </Card>
                   </Link>
@@ -376,7 +424,96 @@ const ProductDetail = () => {
           <p className="fs-6 my-2 mx-3">Chưa có đánh giá nào</p>
         }
       </div>
-    </Container>
+    </Container >
+
+    <Modal
+      show={show}
+      onHide={() => { setShow(false) }}
+      dialogClassName="modal-xl"
+      aria-labelledby="compare-modal-title"
+      centered
+    >
+      <Modal.Header closeButton>
+        <Modal.Title id="compare-modal-title">
+          So sánh sản phẩm
+        </Modal.Title>
+      </Modal.Header>
+
+      <Modal.Body>
+        <Row className="text-center fw-bold mb-3 align-items-center">
+          <Col xs={2}></Col>
+          <Col xs={5}>{product?.productName}</Col>
+          <Col xs={5}>{otherProduct?.productName}</Col>
+        </Row>
+
+        <Row className="align-items-center mb-3">
+          <Col xs={2} className="fw-semibold text-end pe-4">Hình sản phẩm:</Col>
+          <Col xs={5} className="text-center">
+            <Image src={product.imageURL} fluid rounded />
+          </Col>
+          <Col xs={5} className="text-center">
+            <Image src={otherProduct.imageURL} fluid rounded />
+          </Col>
+        </Row>
+
+        <Row className="align-items-start mb-3">
+          <Col xs={2} className="fw-semibold text-end pe-4">Mô tả:</Col>
+          <Col xs={5}>{product?.description}</Col>
+          <Col xs={5}>{otherProduct?.description}</Col>
+        </Row>
+
+        <Row className="align-items-center mb-4">
+          <Col xs={2} className="fw-semibold text-end pe-4">Giá:</Col>
+          <Col xs={5}>{product?.price?.toLocaleString()} VND</Col>
+          <Col xs={5}>{otherProduct?.price?.toLocaleString()} VND</Col>
+        </Row>
+
+        <Row className="text-center align-items-center">
+          <Col xs={2} className="fw-semibold text-end pe-4">Hành động:</Col>
+
+          <Col xs={5}>
+            <Button
+              variant="outline-primary"
+              className="me-2 mb-2"
+              onClick={() => {/* thêm product vào giỏ */ }}
+            >
+              Thêm vào giỏ hàng
+            </Button>
+            <Button
+              variant="success"
+              className="me-2 mb-2"
+              onClick={() => {/* xử lý mua ngay product */ }}
+            >
+              Mua ngay
+            </Button>
+          </Col>
+
+          <Col xs={5}>
+            <Link
+              className="me-2 mb-2 btn btn-outline-dark"
+              to={`/details?id=${otherProduct.productId}`}
+            >
+              Xem chi tiết
+            </Link>
+            <Button
+              variant="outline-primary"
+              className="me-2 mb-2"
+              onClick={() => {/* thêm product vào giỏ */ }}
+            >
+              Thêm vào giỏ hàng
+            </Button>
+            <Button
+              variant="success"
+              className="me-2 mb-2"
+              onClick={() => {/* xử lý mua ngay product */ }}
+            >
+              Mua ngay
+            </Button>
+          </Col>
+        </Row>
+      </Modal.Body>
+    </Modal>
+
   </>;
 };
 export default ProductDetail;
