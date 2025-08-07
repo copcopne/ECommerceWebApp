@@ -6,13 +6,14 @@ import Nav from 'react-bootstrap/Nav';
 import Navbar from 'react-bootstrap/Navbar';
 import NavDropdown from 'react-bootstrap/NavDropdown';
 import { Link, useNavigate } from 'react-router-dom';
-import { DispatchContext, MyToastContext, UserContext } from '../../configs/Contexts';
-import { Overlay, Tooltip } from 'react-bootstrap';
+import { DispatchContext, MyCartContext, MyToastContext, UserContext } from '../../configs/Contexts';
+import { Badge, Overlay, Tooltip } from 'react-bootstrap';
 
 const Header = () => {
   const user = useContext(UserContext);
   const dispatch = useContext(DispatchContext);
   const [, toast] = useContext(MyToastContext);
+  const [cartCounter,] = useContext(MyCartContext);
   const nav = useNavigate();
   const searchTarget = useRef(null);
   const [showSearchTooltip, setShowSearchTooltip] = useState(false);
@@ -71,14 +72,20 @@ const Header = () => {
                 </Overlay>
                 <Button onClick={() => nav((keyword !== undefined && keyword.trim() !== "") ? `/search?keyword=${keyword}` : '/search')} variant="outline-dark">Tìm</Button>
               </Form>
-              <Link to="/my-cart" className='nav-link mx-3'>
+              <Link to="/my-cart" className="nav-link mx-3 position-relative">
                 <i className="bi bi-cart3 fs-5"></i>
+                <Badge
+                  bg="danger"
+                  className="position-absolute top-0 start-100 translate-middle px-2 py-1 small rounded-pill"
+                >
+                  {cartCounter > 99 ? '99+' : cartCounter}
+                </Badge>
               </Link>
 
               {!user ? <>
                 <Link to="/login" className='nav-link mx-1'>Đăng nhập</Link>
                 <Link to="/register" className='nav-link mx-1'>Đăng ký</Link></> : <>
-                {user.role === "ROLE_SELLER" && <Link to="/stores"   className='nav-link mx-1'>Cửa hàng của tôi</Link>}
+                {user.role === "ROLE_SELLER" && <Link to="/stores" className='nav-link mx-1'>Cửa hàng của tôi</Link>}
                 <NavDropdown
                   title={user.name}
                   id="navbarScrollingDropdown"

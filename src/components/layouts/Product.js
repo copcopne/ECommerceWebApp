@@ -1,10 +1,38 @@
-import { memo } from "react";
+import { memo, useContext } from "react";
 import { Button, Card } from "react-bootstrap";
 import { Link } from "react-router-dom";
+import cookie from "react-cookies"
+import { MyCartContext, MyToastContext } from "../../configs/Contexts";
 
-const Product = ({ p, myToastDispatch }) => {
+const Product = ({ p }) => {
+    const [, cartDispatch] = useContext(MyCartContext);
+    const [, myToastDispatch] = useContext(MyToastContext);
     const handleAddToCart = () => {
-        
+        let cart = cookie.load("cart") || null;
+        if (!cart) {
+            cart = {};
+        }
+        if (p.productId in cart) {
+            cart[p.productId]["quantity"]++;
+        } else {
+            cart[p.productId] = {
+                "productId": p.productId,
+                "productName": p.productName,
+                "price": p.price,
+                "quantity": 1
+            }
+        };
+        cookie.save("cart", cart);
+        cartDispatch({
+            "type": "update"
+        });
+        myToastDispatch({
+            "type": "set",
+            "payload": {
+                "variant": "success",
+                "message": "Thêm vào giỏ hàng thành công!"
+            }
+        });
     };
     return <>
         <div style={{ minWidth: "160px", flexShrink: 0 }}>
@@ -20,6 +48,7 @@ const Product = ({ p, myToastDispatch }) => {
                             className="mt-2 mx-1"
                             onClick={(e) => {
                                 e.preventDefault();
+                                handleAddToCart();
                             }}
                         >
                             Thêm vào giỏ hàng

@@ -290,9 +290,11 @@ const ProductDetail = () => {
                 <div key={`r${p.productId}`} style={{ minWidth: "160px", flexShrink: 0 }}>
                   <Link to={`/details?id=${p.productId}`} className="text-decoration-none text-dark">
                     <Card className="rounded h-100 d-flex flex-column justify-content-between">
-                      <Card.Img variant="top" className="rounded" src={p.imageURL} />
+                      <Card.Img style={{ maxHeight: "250px", maxWidth: "200px" }} variant="top" className="rounded" src={p.imageURL} />
                       <Card.Body>
-                        <Card.Title>{p.productName}</Card.Title>
+                        <Card.Title style={{ whiteSpace: "normal", wordWrap: "break-word" }}>
+                          {p.productName}
+                        </Card.Title>
                         <Card.Text>{p.price} VNĐ</Card.Text>
                         {p.storeId.storeId !== product.storeId.storeId &&
                           <Button
@@ -449,7 +451,7 @@ const ProductDetail = () => {
         <Row className="align-items-center mb-3">
           <Col xs={2} className="fw-semibold text-end pe-4">Hình sản phẩm:</Col>
           <Col xs={5} className="text-center">
-            <Image src={product.imageURL} fluid rounded />
+            <Image style={{ maxHeight: "250px" }} src={product.imageURL} fluid rounded />
           </Col>
           <Col xs={5} className="text-center">
             <Image src={otherProduct.imageURL} fluid rounded />
@@ -479,13 +481,6 @@ const ProductDetail = () => {
             >
               Thêm vào giỏ hàng
             </Button>
-            <Button
-              variant="success"
-              className="me-2 mb-2"
-              onClick={() => {/* xử lý mua ngay product */ }}
-            >
-              Mua ngay
-            </Button>
           </Col>
 
           <Col xs={5}>
@@ -501,13 +496,6 @@ const ProductDetail = () => {
               onClick={() => {/* thêm product vào giỏ */ }}
             >
               Thêm vào giỏ hàng
-            </Button>
-            <Button
-              variant="success"
-              className="me-2 mb-2"
-              onClick={() => {/* xử lý mua ngay product */ }}
-            >
-              Mua ngay
             </Button>
           </Col>
         </Row>

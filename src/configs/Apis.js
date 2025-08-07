@@ -25,6 +25,8 @@ export const endpoints = {
     'storeReviews': (id) => `/stores/${id}/reviews`,
     'reviewStore': (id) => `/secure/stores/${id}/reviews`,
 
+    'securePay': `/secure/cart`,
+
 
 }
 export const authApis = () => axios.create({

@@ -27,13 +27,15 @@ import EditPassword from "./components/profile/EditPassword";
 import Empty from "./components/Emtpy";
 import Auth from "./components/Auth";
 import StoreReducer from "./reducers/StoreReducer";
+import MyCartReducer from "./reducers/MyCartReducer";
+import PaymentResult from "./components/PaymentResult";
 
 function App() {
   const [loading, setLoading] = useState(false);
   const [user, dispatch] = useReducer(UserReducer, null);
   const [myToast, myToastDispatch] = useReducer(MyToastReducer, null);
   const [store, storeDispatch] = useReducer(StoreReducer, null);
-  const [cartCounter, cartDispatch] = useReducer(MyCartContext, 0);
+  const [cartCounter, cartDispatch] = useReducer(MyCartReducer, 0);
 
   const loadDatas = async () => {
     try {
@@ -61,6 +63,11 @@ function App() {
   };
   useEffect(() => {
     loadDatas();
+    let cart = cookie.load("cart") || null;
+    if (cart)
+      cartDispatch({
+        "type": "update"
+      })
   }, []);
 
   if (loading)
@@ -94,6 +101,8 @@ function App() {
                     <Route path="/stores/edit" element={<EditStore />} />
                     <Route path="/stores/add-product" element={<AddProduct />} />
                     <Route path="/stores/stats" element={<Stats />} />
+
+                    <Route path="/paymentStatus" element={<PaymentResult />} />
 
                     <Route path="*" element={<Empty />} />
                   </Routes>
