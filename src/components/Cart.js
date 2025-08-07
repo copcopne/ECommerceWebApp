@@ -73,14 +73,14 @@ const Cart = () => {
             return;
         }
         else if (+newQuantity === 0) {
-            if (handleRemoveProduct(editingProduct.productId)) {
+            if (handleRemoveProduct(editingProduct.id)) {
                 setEdititngProduct({});
                 setShow(false);
             }
             else return;
         }
         else {
-            cart[editingProduct.productId]["quantity"] = newQuantity;
+            cart[editingProduct.id]["quantity"] = newQuantity;
             cookie.save("cart", cart);
             cartDispatch({
                 "type": "update"
@@ -101,17 +101,28 @@ const Cart = () => {
         try {
             setLoading(true);
             console.info(Object.values(cart));
-            await authApis().post(`${endpoints['securePay']}?paymentMethod=${paymentMethod}`, Object.values(cart));
-            cookie.remove('cart');
-            cartDispatch({
-                "type": "update"
-            });
-            nav('/paymentStatus?result=success');
+            let res = await authApis().post(`${endpoints['securePay']}?paymentMethod=${paymentMethod}`, Object.values(cart));
+            if (paymentMethod === "MOMO") {
+                const paymentUrl = res.data?.payUrl;
+                const popup = window.open(paymentUrl, "_blank", "width=600,height=800");
+
+                const interval = setInterval(() => {
+                    if (popup.closed) {
+                        clearInterval(interval);
+                        setLoading(false);
+                        nav('/paymentStatus?result=failed');
+                    }
+                }, 500);
+            } else {
+                cookie.remove('cart');
+                cartDispatch({
+                    "type": "update"
+                });
+                nav('/paymentStatus?result=success');
+            }
         } catch (error) {
             console.error(error);
             nav('/paymentStatus?result=failed');
-        } finally {
-            setLoading(false);
         }
     };
     return <>
@@ -217,7 +228,7 @@ const Cart = () => {
                             style={{ maxWidth: '140px' }}
                         >
                             <option value="COD">COD</option>
-                            <option value="momo">Momo</option>
+                            <option value="MOMO">Momo</option>
                         </Form.Select>
 
                         <Button
