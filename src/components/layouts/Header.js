@@ -76,7 +76,7 @@ const Header = () => {
                 <i className="bi bi-cart3 fs-5"></i>
                 <Badge
                   bg="danger"
-                  className="position-absolute top-0 start-100 translate-middle px-2 py-1 small rounded-pill"
+                  className="px-2 py-1 rounded-pill"
                 >
                   {cartCounter > 99 ? '99+' : cartCounter}
                 </Badge>
