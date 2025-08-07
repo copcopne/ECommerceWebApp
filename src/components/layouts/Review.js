@@ -139,10 +139,12 @@ const Review = ({ user, review, pId }) => {
             {user ? (
                 <Row className="mt-3 ms-5 ps-3 border-start border-2 border-primary">
                     <Col md={1} xs={3}>
-                        <Image
+                        <img
                             src={user?.avatarURL}
-                            fluid
-                            className="rounded-circle"
+                            alt="user-avatar"
+                            className="rounded-circle border"
+                            width={80}
+                            height={80}
                         />
                     </Col>
                     <Col md={11} xs={9}>
