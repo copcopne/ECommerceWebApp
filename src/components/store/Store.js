@@ -241,7 +241,7 @@ const Store = () => {
                                     width={80}
                                     height={80}
                                 />
-                                <Form>
+                                {isMyStore && <Form>
                                     <span
                                         onClick={() => avatar.current?.click()}
                                         className="nav-link text-primary p-0 my-2"
@@ -261,7 +261,7 @@ const Store = () => {
                                             }
                                         }}
                                     />
-                                </Form>
+                                </Form>}
                             </Col>
 
                             <Col xs={12} md={7}>
