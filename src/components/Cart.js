@@ -101,8 +101,11 @@ const Cart = () => {
         try {
             setLoading(true);
             console.info(Object.values(cart));
-            await authApis().post(`${endpoints['securePay']}?paymentMethod=COD`, Object.values(cart));
+            await authApis().post(`${endpoints['securePay']}?paymentMethod=${paymentMethod}`, Object.values(cart));
             cookie.remove('cart');
+            cartDispatch({
+                "type": "update"
+            });
             nav('/paymentStatus?result=success');
         } catch (error) {
             console.error(error);
@@ -144,15 +147,15 @@ const Cart = () => {
                 </thead>
                 <tbody>
                     {Object.values(cart).map((c, idx) => (
-                        <tr key={c?.productId}>
+                        <tr key={c?.id}>
                             <td>{idx + 1}</td>
-                            <td>{c?.productName}</td>
+                            <td>{c?.name}</td>
                             <td>{c?.price?.toLocaleString()} VND</td>
                             <td>{c.quantity}</td>
                             <td>{(c?.price * c?.quantity)?.toLocaleString()} VND</td>
                             <td>
                                 <Link
-                                    to={`/details?id=${c.productId}`}
+                                    to={`/details?id=${c.id}`}
                                     className="btn btn-outline-success btn-sm mx-1"
                                 >
                                     Xem chi tiết
@@ -176,7 +179,7 @@ const Cart = () => {
                                     className="mx-1"
                                     onClick={(e) => {
                                         e.preventDefault();
-                                        handleRemoveProduct(c.productId);
+                                        handleRemoveProduct(c.id);
                                     }}
                                 >
                                     Xóa
@@ -197,9 +200,11 @@ const Cart = () => {
             </Row>
 
             {!user ? (
-                <Alert variant="info">
-                    Vui lòng <Link to="/login?next=/my-cart">đăng nhập</Link> để thanh toán!
-                </Alert>
+                <p className="my-4 mx-3">
+                    Vui lòng
+                    <Link to={`/login?next=/my-cart`} className="text-primary fw-bold text-decoration-underline mx-1">ĐĂNG NHẬP</Link>
+                    để thanh toán!
+                </p>
             ) : (
                 <div className="text-end my-3">
                     <InputGroup
@@ -221,7 +226,7 @@ const Cart = () => {
                             onClick={handlePay}
                             disabled={loading}
                         >
-                            Thanh toán
+                            THANH TOÁN
                         </Button>
                     </InputGroup>
                 </div>

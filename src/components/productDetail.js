@@ -4,9 +4,11 @@ import { Link, useSearchParams } from "react-router-dom";
 import Apis, { authApis, endpoints } from "../configs/Apis";
 import Empty from "./Emtpy";
 import MySpinner from "./layouts/MySpinner";
-import { MyToastContext, UserContext } from "../configs/Contexts";
+import { MyCartContext, MyToastContext, StoreContext, UserContext } from "../configs/Contexts";
 import { FaStar } from "react-icons/fa";
 import Review from "./layouts/Review";
+import cookie from 'react-cookies'
+import ProductModal from "./layouts/ProductModal";
 
 const ProductDetail = () => {
   const user = useContext(UserContext);
@@ -17,7 +19,7 @@ const ProductDetail = () => {
   const [relatedProducts, setRelatedProducts] = useState([]);
   const [page, setPage] = useState(1);
   const [store, setStore] = useState({});
-  const [q] = useSearchParams();
+  const [q,] = useSearchParams();
   const [rating, setRating] = useState(0);
   const [review, setReview] = useState('');
   const [reviews, setReviews] = useState([]);
@@ -26,6 +28,37 @@ const ProductDetail = () => {
   let pId = q.get("id");
 
   const [show, setShow] = useState(false);
+  const [, cartDispatch] = useContext(MyCartContext);
+  const [myStore,] = useContext(StoreContext);
+
+  const [showEdit, setShowEdit] = useState(false);
+  const handleAddToCart = (p) => {
+    let cart = cookie.load("cart") || null;
+    if (!cart) {
+      cart = {};
+    }
+    if (p.productId in cart) {
+      cart[p.productId]["quantity"]++;
+    } else {
+      cart[p.productId] = {
+        "id": p.productId,
+        "name": p.productName,
+        "price": p.price,
+        "quantity": 1
+      }
+    };
+    cookie.save("cart", cart);
+    cartDispatch({
+      "type": "update"
+    });
+    myToastDispatch({
+      "type": "set",
+      "payload": {
+        "variant": "success",
+        "message": "Thêm vào giỏ hàng thành công!"
+      }
+    });
+  };
 
   const fetchProduct = async () => {
     try {
@@ -234,7 +267,7 @@ const ProductDetail = () => {
           <div className="d-flex align-items-center mb-4 gap-4">
             <div className="fs-5">
               <span className="text-secondary">Giá:</span>{' '}
-              <strong className="text-dark">{product?.price?.toLocaleString()} VNĐ</strong>
+              <strong className="text-dark">{product?.price?.toLocaleString('vi-VN')} VND</strong>
             </div>
             <div className="d-flex align-items-center fs-5">
               <span className="text-secondary me-2">Đánh giá trung bình:</span>
@@ -251,19 +284,29 @@ const ProductDetail = () => {
           <hr />
 
           <div className="d-flex gap-2">
-            <Button variant="outline-success" className="flex-fill">
-              Thêm vào giỏ hàng
-            </Button>
+            {product?.storeId?.storeId == myStore?.storeId ?
+              <Button
+                variant="success"
+                className="flex-fill"
+                onClick={() => setShowEdit(true)}
+              >
+                Chỉnh sửa sản phẩm
+              </Button> :
+              <Button onClick={() => handleAddToCart(product)} variant="outline-success" className="flex-fill">
+                Thêm vào giỏ hàng
+              </Button>}
           </div>
         </Col>
       </Row>
 
       <Row className="mt-4">
-        <Col md={1} xs={3} className="mt-2">
-          <Image
-            src={store.avatarURL}
-            fluid
-            className="rounded-circle"
+        <Col md={2} xs={3} className="mt-2 text-end">
+          <img
+            src={store?.avatarURL}
+            alt="store-avatar"
+            className="rounded-circle border"
+            width={80}
+            height={80}
           />
         </Col>
         <Col md={3} xs={9} className="mt-2">
@@ -272,7 +315,7 @@ const ProductDetail = () => {
             Xem cửa hàng
           </Link>
         </Col>
-        <Col md={8} xs={12} className="mt-2">
+        <Col md={7} xs={12} className="mt-2">
           <div className="d-flex">
             <p className="mb-1">Mô tả cửa hàng:</p>
             <p className="mb-1 mx-3 fw-bold">{store.description}</p>
@@ -295,12 +338,12 @@ const ProductDetail = () => {
                         <Card.Title style={{ whiteSpace: "normal", wordWrap: "break-word" }}>
                           {p.productName}
                         </Card.Title>
-                        <Card.Text>{p.price} VNĐ</Card.Text>
+                        <Card.Text>{p.price.toLocaleString('vi-VN')} VND</Card.Text>
                         {p.storeId.storeId !== product.storeId.storeId &&
                           <Button
                             variant="outline-primary"
                             size="sm"
-                            className="mt-2 mx-1"
+                            className="mx-1 mb-2 flex-fill"
                             onClick={(e) => {
                               e.preventDefault();
                               showCompare(p.productId);
@@ -309,16 +352,15 @@ const ProductDetail = () => {
                             So sánh
                           </Button>}
 
-                        <Button
-                          variant="outline-success"
-                          size="sm"
-                          className="mt-2 mx-1"
-                          onClick={(e) => {
-                            e.preventDefault();
-                          }}
-                        >
-                          Thêm vào giỏ hàng
-                        </Button>
+                        {p?.storeId?.storeId == myStore?.storeId &&
+                          <Button
+                            variant="outline-success"
+                            size="sm"
+                            className="mx-1 mb-2 flex-fill"
+                            onClick={handleAddToCart}
+                          >
+                            Thêm vào giỏ hàng
+                          </Button>}
 
                       </Card.Body>
                     </Card>
@@ -361,10 +403,12 @@ const ProductDetail = () => {
         <span className="fs-4 fw-medium">Viết đánh giá</span>
         {user ? <Row className="mt-3">
           <Col md={1} xs={3}>
-            <Image
+            <img
               src={user?.avatarURL}
-              fluid
-              className="rounded-circle"
+              alt="user-avatar"
+              className="rounded-circle border"
+              width={80}
+              height={80}
             />
           </Col>
           <Col md={11} xs={9}>
@@ -474,13 +518,14 @@ const ProductDetail = () => {
           <Col xs={2} className="fw-semibold text-end pe-4">Hành động:</Col>
 
           <Col xs={5}>
-            <Button
-              variant="outline-primary"
-              className="me-2 mb-2"
-              onClick={() => {/* thêm product vào giỏ */ }}
-            >
-              Thêm vào giỏ hàng
-            </Button>
+            {product?.storeId?.storeId !== myStore?.storeId &&
+              <Button
+                variant="outline-primary"
+                className="me-2 mb-2"
+                onClick={() => handleAddToCart(product)}
+              >
+                Thêm vào giỏ hàng
+              </Button>}
           </Col>
 
           <Col xs={5}>
@@ -490,17 +535,29 @@ const ProductDetail = () => {
             >
               Xem chi tiết
             </Link>
-            <Button
-              variant="outline-primary"
-              className="me-2 mb-2"
-              onClick={() => {/* thêm product vào giỏ */ }}
-            >
-              Thêm vào giỏ hàng
-            </Button>
+            {otherProduct?.storeId?.storeId !== myStore?.storeId &&
+              <Button
+                variant="outline-primary"
+                className="me-2 mb-2"
+                onClick={() => handleAddToCart(otherProduct)}
+              >
+                Thêm vào giỏ hàng
+              </Button>}
           </Col>
         </Row>
       </Modal.Body>
     </Modal>
+
+    <ProductModal
+      currentProduct={product}
+      isUpdate={true}
+      setShow={setShowEdit}
+      show={showEdit}
+      setLoading={setLoading}
+      setCurrentProduct={setProduct}
+      myToastDispatch={myToastDispatch}
+
+    />
 
   </>;
 };

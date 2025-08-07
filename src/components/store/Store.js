@@ -1,4 +1,4 @@
-import { useContext, useEffect, useState } from "react";
+import { useContext, useEffect, useRef, useState } from "react";
 import { Container, Row, Col, Tab, Tabs, Button, Image, Form } from "react-bootstrap";
 import { FaStore, FaStar, FaRegStar } from "react-icons/fa";
 import { Link, useNavigate, useSearchParams } from "react-router-dom";
@@ -13,7 +13,7 @@ import StoreModal from "../layouts/StoreModal";
 import ProductModal from "../layouts/ProductModal";
 const Store = () => {
     const user = useContext(UserContext);
-    const [myStore,] = useContext(StoreContext);
+    const [myStore, myStoreDispatch] = useContext(StoreContext);
     const [store, setStore] = useState({});
     const [empty, setEmpty] = useState(false);
     const [q,] = useSearchParams();
@@ -26,10 +26,45 @@ const Store = () => {
     const [, myToastDispatch] = useContext(MyToastContext);
     const [show, setShow] = useState(false);
     const [showNewProduct, setShowNewProduct] = useState(false);
+    const [hasChange, setHasChange] = useState(1);
+    const [isUpdate, setIsUpdate] = useState(false);
     const nav = useNavigate();
 
     const storeId = q.get("id") || ((myStore && Object.keys(myStore).length === 0) ? null : myStore?.storeId);
     const isMyStore = Boolean(myStore?.storeId) && storeId == myStore.storeId;
+
+    const avatar = useRef(null);
+    const handleUploadAvatar = async () => {
+        try {
+            setLoading(true);
+            let form = new FormData();
+            form.append("image", avatar.current.files[0]);
+            let res = await authApis().patch(endpoints['secureStore'], form);
+            setStore(res.data);
+            myStoreDispatch({
+                "type": "login",
+                "payload": res.data
+            });
+            myToastDispatch({
+                "type": "set",
+                "payload": {
+                    "variant": "success",
+                    "message": "Thay đổi ảnh đại diện thành công!"
+                }
+            });
+        } catch (error) {
+            myToastDispatch({
+                "type": "set",
+                "payload": {
+                    "variant": "danger",
+                    "message": "LỖI xảy ra khi thay đổi ảnh đại diện!"
+                }
+            });
+            console.error(error);
+        } finally {
+            setLoading(false);
+        };
+    };
 
     useEffect(() => {
         if (!user) {
@@ -67,11 +102,12 @@ const Store = () => {
 
         if (!empty)
             loadStore();
-    }, [q, myStore]);
+    }, [q, myStore, hasChange]);
 
     useEffect(() => {
         setStore({});
         setTabData([]);
+        setPage(1);
         if (empty)
             setEmpty(false);
     }, [q]);
@@ -80,7 +116,11 @@ const Store = () => {
     useEffect(() => {
         if (empty !== true)
             loadTabData();
-    }, [activeKey, page]);
+    }, [activeKey, page, storeId, hasChange]);
+
+    const update = () => {
+        setHasChange(hasChange + 1);
+    };
 
     const loadTabData = async () => {
         if (page === 0 || storeId === undefined || storeId === null)
@@ -179,6 +219,11 @@ const Store = () => {
         }
     };
 
+    const handleUpdateStore = () => {
+        setIsUpdate(true);
+        setShow(true);
+    };
+
     if (empty)
         return <Empty />
     return (
@@ -196,6 +241,27 @@ const Store = () => {
                                     width={80}
                                     height={80}
                                 />
+                                <Form>
+                                    <span
+                                        onClick={() => avatar.current?.click()}
+                                        className="nav-link text-primary p-0 my-2"
+                                        style={{ cursor: 'pointer', display: 'inline-block', textDecoration: 'underline' }}
+                                    >
+                                        Cập nhật ảnh đại diện
+                                    </span>
+                                    <Form.Control
+                                        type="file"
+                                        ref={avatar}
+                                        style={{ display: 'none' }}
+                                        accept="image/png, image/jpeg"
+                                        onChange={(e) => {
+                                            const file = e.target.files[0];
+                                            if (file) {
+                                                handleUploadAvatar();
+                                            }
+                                        }}
+                                    />
+                                </Form>
                             </Col>
 
                             <Col xs={12} md={7}>
@@ -207,6 +273,7 @@ const Store = () => {
                                 </div>
                                 {isMyStore &&
                                     <div className="mt-2">
+                                        <Button onClick={handleUpdateStore} variant="outline-dark" className="mx-1">Chỉnh sửa thông tin</Button>
                                         <Button onClick={() => setShowNewProduct(true)} variant="outline-primary" className="mx-1">Thêm sản phẩm</Button>
                                         <Link to="/stores/stats" className="btn btn-outline-success mx-1">Thống kê</Link>
                                     </div>
@@ -232,8 +299,11 @@ const Store = () => {
                             <Tab eventKey="products" title="Sản phẩm">
                                 <Row className="p-3">
                                     {(tabData.length !== 0 && activeKey === "products") && tabData.map(p =>
-                                        <Col key={`p${p.productId}`} md={2} xs={3} className="p-1">
-                                            <Product p={p} />
+                                        <Col key={`p${p.productId}`} md={2} xs={6} className="p-1">
+                                            <Product
+                                                p={p}
+                                                setLoading={setLoading}
+                                                update={update} />
                                         </Col>)}
                                     {page !== 0 && tabData.length > 0 && (
                                         <Col xs={12} className="text-center my-3">
@@ -254,10 +324,12 @@ const Store = () => {
                                         <span className="fs-4 fw-medium">Viết đánh giá</span>
                                         {user ? <Row className="mt-3">
                                             <Col md={1} xs={3}>
-                                                <Image
+                                                <img
                                                     src={user?.avatarURL}
-                                                    fluid
-                                                    className="rounded-circle"
+                                                    alt="user-avatar"
+                                                    className="rounded-circle border"
+                                                    width={80}
+                                                    height={80}
                                                 />
                                             </Col>
                                             <Col md={11} xs={9}>
@@ -307,10 +379,12 @@ const Store = () => {
                                 {(tabData.length !== 0 && activeKey === "reviews") && tabData.map(review =>
                                     <Row key={review?.reviewId} className="mt-3">
                                         <Col md={1} xs={3}>
-                                            <Image
+                                            <img
                                                 src={review?.avatarURL}
-                                                fluid
-                                                className="rounded-circle"
+                                                alt="reviewer-avatar"
+                                                className="rounded-circle border"
+                                                width={80}
+                                                height={80}
                                             />
                                         </Col>
                                         <Col md={11} xs={9}>
@@ -360,11 +434,14 @@ const Store = () => {
                 myToastDispatch={myToastDispatch}
                 setStore={setStore}
                 setLoading={setLoading}
+                isUpdate={isUpdate}
+                setIsUpdate={setIsUpdate}
+                currentStoreData={store}
             />
 
             <ProductModal
-                showNewProduct={showNewProduct}
-                setShowNewProduct={setShowNewProduct}
+                show={showNewProduct}
+                setShow={setShowNewProduct}
                 setLoading={setLoading}
                 activeKey={activeKey}
                 myToastDispatch={myToastDispatch}

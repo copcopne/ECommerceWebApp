@@ -11,9 +11,7 @@ import { useEffect, useReducer, useState } from "react";
 import UserReducer from "./reducers/UserReducer";
 import { DispatchContext, MyCartContext, MyToastContext, StoreContext, UserContext } from "./configs/Contexts";
 import Profile from "./components/profile/Profile";
-import EditStore from "./components/store/EditStore";
 import Stats from "./components/store/Stats";
-import AddProduct from "./components/store/AddProduct";
 import Search from "./components/Search";
 import ProductDetail from "./components/productDetail";
 import Cart from "./components/Cart";
@@ -64,10 +62,11 @@ function App() {
   useEffect(() => {
     loadDatas();
     let cart = cookie.load("cart") || null;
-    if (cart)
+    if (cart) {
       cartDispatch({
         "type": "update"
-      })
+      });
+    }
   }, []);
 
   if (loading)
@@ -98,8 +97,6 @@ function App() {
                     <Route path="/profile/edit-password" element={<EditPassword />} />
 
                     <Route path="/stores" element={<Store />} />
-                    <Route path="/stores/edit" element={<EditStore />} />
-                    <Route path="/stores/add-product" element={<AddProduct />} />
                     <Route path="/stores/stats" element={<Stats />} />
 
                     <Route path="/paymentStatus" element={<PaymentResult />} />

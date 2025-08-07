@@ -146,7 +146,7 @@ const Profile = () => {
                                         onChange={(e) => {
                                             const file = e.target.files[0];
                                             if (file) {
-                                                handleUploadAvatar(file);
+                                                handleUploadAvatar();
                                             }
                                         }}
                                     />
@@ -154,9 +154,6 @@ const Profile = () => {
                             </div>
                         </div>
                         <hr />
-                        <div>
-                            <Link>Đơn hàng đã đặt</Link>
-                        </div>
                     </Col>
                     <Col md={9} xs={12}>
                         <h2>Cập nhật thông tin tài khoản</h2>

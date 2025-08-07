@@ -10,6 +10,7 @@ const Home = () => {
     const [products, setProducts] = useState([]);
     const [page, setPage] = useState(1);
     const [q] = useSearchParams();
+    const [hasChange, setHasChange] = useState(1);
 
     const loadCates = async () => {
         try {
@@ -35,14 +36,20 @@ const Home = () => {
             if (res.data.length === 0)
                 setPage(0);
             else {
-                if (page === 1)
+                if (page === 1) {
                     setProducts(res.data);
-                else {
-                    let data = res.data.filter(
-                        item =>
-                            !products.some(p => p.productId === item.productId)
-                    );
-                    setProducts([...products, ...data]);
+                } else {
+                    const updated = [...products];
+                    res.data.forEach(item => {
+                        const index = updated.findIndex(p => p.productId === item.productId);
+                        if (index !== -1) {
+                            updated[index] = item;
+                        } else {
+                            updated.push(item);
+                        }
+                    });
+
+                    setProducts(updated);
                 }
             }
         } catch (error) {
@@ -51,6 +58,11 @@ const Home = () => {
             setLoading(false);
         };
     };
+
+    const update = () => {
+        setHasChange(hasChange + 1);
+    };
+
     const loadMore = () => {
         if (!loading && page !== 0)
             setPage(page + 1);
@@ -62,7 +74,7 @@ const Home = () => {
 
     useEffect(() => {
         loadProds();
-    }, [page, q]);
+    }, [page, q, hasChange]);
 
     useEffect(() => {
         setPage(1);
@@ -72,7 +84,7 @@ const Home = () => {
     return (<>
         <div>
             <span className="fs-4 fw-medium">Danh mục sản phẩm</span>
-            <div className="d-flex overflow-auto mt-3 pb-2" style={{ gap: "1rem" }}>
+            <div className="d-flex overflow-auto mt-3 pb-2" style={{ gap: "0.5rem" }}>
                 <div className="border p-2 d-flex justify-content-center align-items-center" style={{ minWidth: "160px", flexShrink: 0 }}>
                     <Link to="/" className="navbar-brand fw-bold text-center">Tất cả sản phẩm</Link>
                 </div>
@@ -94,8 +106,12 @@ const Home = () => {
             <span className="fs-4 fw-medium">Danh sách sản phẩm</span>
             <Row className="my-3">
                 {products.map((p) => (
-                    <Col key={p.productId} md={2} xs={3} className="p-1">
-                        <Product p={p} />
+                    <Col key={p.productId} md={2} xs={6} className="p-1">
+                        <Product
+                            p={p}
+                            update={update}
+                            setLoading={setLoading}
+                        />
                     </Col>
                 ))}
 

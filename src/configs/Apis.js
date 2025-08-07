@@ -24,6 +24,7 @@ export const endpoints = {
     'secureStore': `/secure/stores`,
     'storeReviews': (id) => `/stores/${id}/reviews`,
     'reviewStore': (id) => `/secure/stores/${id}/reviews`,
+    'secureStats': `/secure/stats`,
 
     'securePay': `/secure/cart`,
 

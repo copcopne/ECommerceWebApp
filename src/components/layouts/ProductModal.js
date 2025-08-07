@@ -1,15 +1,20 @@
 import { memo, useEffect, useRef, useState } from "react";
 import { Button, Form, Modal } from "react-bootstrap";
 import Apis, { authApis, endpoints } from "../../configs/Apis";
+import { useNavigate } from "react-router-dom";
 
 const ProductModal = ({
-    showNewProduct,
-    setShowNewProduct,
+    show,
+    setShow,
     setTabData,
     setLoading,
     activeKey,
     tabData,
-    myToastDispatch
+    myToastDispatch,
+    isUpdate,
+    update,
+    currentProduct,
+    setCurrentProduct
 }) => {
     const [productName, setProductName] = useState('');
     const [productDescription, setProductDescription] = useState('');
@@ -17,21 +22,30 @@ const ProductModal = ({
     const [price, setPrice] = useState(0);
     const productImg = useRef(null);
     const [categories, setCategories] = useState([]);
+    const nav = useNavigate();
     useEffect(() => {
-        const loadCates = async () => {
-            if (showNewProduct)
-                try {
-                    setLoading(true);
-                    let res = await Apis.get(endpoints['categories']);
-                    setCategories(res.data);
-                } catch (error) {
-                    console.error(error);
-                } finally {
-                    setLoading(false);
-                };
-        };
-        loadCates();
-    }, [showNewProduct]);
+        if (show) {
+            const loadCates = async () => {
+                if (show)
+                    try {
+                        setLoading(true);
+                        let res = await Apis.get(endpoints['categories']);
+                        setCategories(res.data);
+                    } catch (error) {
+                        console.error(error);
+                    } finally {
+                        setLoading(false);
+                    };
+            };
+            loadCates();
+            if (currentProduct) {
+                setProductName(currentProduct.productName);
+                setProductDescription(currentProduct.description);
+                setCategoryId(currentProduct.categoryId.categoryId);
+                setPrice(currentProduct.price);
+            }
+        }
+    }, [show]);
 
     const validateProduct = () => {
         if (categoryId === "") {
@@ -58,7 +72,7 @@ const ProductModal = ({
             return false;
         }
 
-        if (!productImg.current.files[0]) {
+        if (!isUpdate && !productImg.current.files[0]) {
             myToastDispatch({
                 "type": "set",
                 "payload": {
@@ -78,28 +92,40 @@ const ProductModal = ({
         try {
             setLoading(true);
             let form = new FormData();
-            form.append("image", productImg.current.files[0]);
+            if (productImg)
+                form.append("image", productImg.current.files[0]);
+
             form.append("categoryId", categoryId);
             form.append("productName", productName);
             form.append("price", price);
             form.append("description", productDescription);
-            let res = await authApis().post(endpoints['secureProducts'], form);
-            if (activeKey === 'products')
+            let res;
+            if (isUpdate) {
+                res = await authApis().patch(endpoints['secureProduct'](currentProduct.productId), form);
+                if (setCurrentProduct)
+                    setCurrentProduct(res.data);
+            }
+            else
+                res = await authApis().post(endpoints['secureProducts'], form);
+
+            update && update();
+
+            if (activeKey && activeKey === 'products')
                 setTabData([res.data, ...tabData]);
             myToastDispatch({
                 "type": "set",
                 "payload": {
                     "variant": "success",
-                    "message": "Tạo sản phẩm thành công!"
+                    "message": `${!isUpdate ? "Tạo" : "Cập nhật"} sản phẩm thành công!`
                 }
             });
-            setShowNewProduct(false);
+            setShow(false);
         } catch (error) {
             myToastDispatch({
                 "type": "set",
                 "payload": {
                     "variant": "danger",
-                    "message": "LỖI xảy ra khi tạo sản phẩm!"
+                    "message": `LỖI xảy ra khi ${!isUpdate ? "tạo" : "cập nhật"} sản phẩm!`
                 }
             });
             console.error(error);
@@ -107,18 +133,49 @@ const ProductModal = ({
             setLoading(false);
         }
     };
+
+    const handleDeleteProduct = async () => {
+        let result = window.confirm("Bạn có chắc muốn xóa sản phẩm này không?");
+        if (result) {
+            try {
+                await authApis().delete(endpoints['secureProduct'](currentProduct.productId));
+                if (setCurrentProduct)
+                    nav("/");
+                update && update();
+                myToastDispatch({
+                    "type": "set",
+                    "payload": {
+                        "variant": "success",
+                        "message": `Xóa sản phẩm thành công!`
+                    }
+                });
+                setShow(false);
+            } catch (error) {
+                myToastDispatch({
+                    "type": "set",
+                    "payload": {
+                        "variant": "danger",
+                        "message": `LỖI xảy ra khi xóa sản phẩm!`
+                    }
+                });
+                console.error(error);
+            } finally {
+                setLoading(false);
+            }
+        }
+    };
     useEffect(() => {
-        if (!showNewProduct) {
+        if (!show) {
             setProductName('');
             setProductDescription('');
             setCategoryId('');
             setPrice(0);
         }
-    }, [showNewProduct]);
+    }, [show]);
     return <>
-        <Modal show={showNewProduct} onHide={() => setShowNewProduct(false)}>
+        <Modal show={show} onHide={() => setShow(false)}>
             <Modal.Header closeButton>
-                <Modal.Title>Sản phẩm mới</Modal.Title>
+                <Modal.Title>Thông tin sản phẩm</Modal.Title>
             </Modal.Header>
             <Modal.Body>
                 <Form>
@@ -176,11 +233,15 @@ const ProductModal = ({
                 </Form>
             </Modal.Body>
             <Modal.Footer>
-                <Button variant="secondary" onClick={() => setShowNewProduct(false)}>
+                <Button variant="secondary" onClick={() => setShow(false)}>
                     Hủy
                 </Button>
+                {isUpdate &&
+                    <Button variant="danger" onClick={handleDeleteProduct}>
+                        Xóa sản phẩm
+                    </Button>}
                 <Button variant="primary" onClick={handleUploadProduct}>
-                    Thêm sản phẩm
+                    {isUpdate ? "Cập nhật" : "Thêm"} sản phẩm
                 </Button>
             </Modal.Footer>
         </Modal>
