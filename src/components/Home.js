@@ -3,6 +3,7 @@ import { Button, Card, Col, Row } from "react-bootstrap";
 import { Link, useSearchParams } from "react-router-dom";
 import Apis, { endpoints } from "../configs/Apis";
 import Product from "./layouts/Product";
+import MySpinner from "./layouts/MySpinner";
 
 const Home = () => {
     const [loading, setLoading] = useState(false);
