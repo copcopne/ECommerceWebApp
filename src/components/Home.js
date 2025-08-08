@@ -132,8 +132,8 @@ const Home = () => {
                     </Col>
                 )}
             </Row>
-
         </div>
+        {loading && <MySpinner />}
     </>);
 }
 export default Home;
